@@ -1,0 +1,972 @@
+---
+title: "Churchill Model Runs"
+output: pdf_document
+date: "2024-02-15"
+---
+
+# Load Packages
+```{r}
+rm(list = ls())
+
+library(data.table)
+library(ggplot2)
+library(cowplot)
+library(openair)
+library(plotrix)
+library(signal)
+library(svMisc)
+library(zoo)
+library(stringr)
+library(plyr)
+library(dplyr)
+library(lubridate)
+library(tidyverse)
+library(RColorBrewer)
+library(tidyr)
+library(ppcor)
+```
+# Load DF's 
+```{r}
+h1 = fread('G:/My Drive/Permafrost Pathways/Towers/Churchill/Data/CA_CF3.csv', nrows = 1, skip = 0)
+dat1 = fread('G:/My Drive/Permafrost Pathways/Towers/Churchill/Data/CA_CF3.csv',skip = 1, header = FALSE, na.strings=c('-9999','NA','NaN','NAN'))
+
+h2 = fread('G:/My Drive/Permafrost Pathways/Towers/Churchill/Data/AMF_CA-CF2_BASE_HH_2-5.csv',nrows=1,skip=2)
+dat2 = fread ('G:/My Drive/Permafrost Pathways/Towers/Churchill/Data/AMF_CA-CF2_BASE_HH_2-5.csv',skip = 3,header = FALSE, na.strings=c('-9999','NA','NaN','NAN'))
+
+h3 = fread('G:/My Drive/Permafrost Pathways/Towers/Churchill/Data/AMF_CA-CF1_BASE_HH_2-5.csv',nrows=1,skip=2)
+dat3 = fread ('G:/My Drive/Permafrost Pathways/Towers/Churchill/Data/AMF_CA-CF1_BASE_HH_2-5.csv',skip = 3,header = FALSE, na.strings=c('-9999','NA','NaN','NAN'))
+
+names(dat1) = names(h1)
+names(dat2) = names(h2)
+names(dat3) = names(h3)
+
+CF3= dat1
+CF2 = dat2
+CF1 = dat3
+```
+
+# Timestamps
+```{r}
+
+#CF2
+
+CF2$ts = as.character(CF2$TIMESTAMP_START)
+
+CF2$year = substr(CF2$ts,1,4)
+CF2$month = substr(CF2$ts,5,6)
+CF2$day = substr(CF2$ts,7,8)
+CF2$hour = substr(CF2$ts,9,10)
+CF2$min = substr(CF2$ts,11,12)
+
+
+
+CF2$ts = as.POSIXct(paste(CF2$year,CF2$month,CF2$day,CF2$hour,CF2$min,sep = ''),
+                    format = '%Y%m%d%H%M',
+                    tz = "America/Belize"	
+                    )
+
+CF2$date = as.POSIXct(paste(CF2$year,CF2$month,CF2$day,sep = ''),
+                      format = '%Y%m%d')
+#CF1
+
+CF1$ts = as.character(CF1$TIMESTAMP_START)
+
+CF1$year = substr(CF1$ts,1,4)
+CF1$month = substr(CF1$ts,5,6)
+CF1$day = substr(CF1$ts,7,8)
+CF1$hour = substr(CF1$ts,9,10)
+CF1$min = substr(CF1$ts,11,12)
+
+
+
+CF1$ts = as.POSIXct(paste(CF1$year,CF1$month,CF1$day,CF1$hour,CF1$min,sep = ''),
+                    format = '%Y%m%d%H%M',
+                    tz = "America/Belize"	
+                    )
+
+CF1$date = as.POSIXct(paste(CF1$year,CF1$month,CF1$day,sep = ''),
+                      format = '%Y%m%d')
+
+#CF3
+
+CF3$ts = as.character(CF3$TIMESTAMP_START)
+
+CF3$year = substr(CF3$ts,1,4)
+CF3$month = substr(CF3$ts,5,6)
+CF3$day = substr(CF3$ts,7,8)
+CF3$hour = substr(CF3$ts,9,10)
+CF3$min = substr(CF3$ts,11,12)
+
+
+
+CF3$ts = as.POSIXct(paste(CF3$year,CF3$month,CF3$day,CF3$hour,CF3$min,sep = ''),
+                    format = '%Y%m%d%H%M',
+                    tz = "America/Belize"	
+                    )
+
+
+CF3$date = as.POSIXct(paste(CF3$year,CF3$month,CF3$day,sep = ''),
+                      format = '%Y%m%d')
+
+
+```
+
+## Variable names CF3
+```{r,warning = FALSE}
+
+#Removing TS_1_1_1, TS_2_1_1, and TS_2_2_1 (choosing to use therm data, not CS655's)
+#Changing TS_3 and TS_4 into TS_2 and TS_1 
+#Changing TS_2_1_1 and TS_2_2_1 into TS_3_0_1 & TS_3_05_1
+
+CF3 <- CF3 %>% dplyr::select(-TS_1_1_1)
+CF3 <- CF3 %>% dplyr::select(-TS_2_1_1)
+CF3 <- CF3 %>% dplyr::select(-TS_2_2_1)
+
+
+#Open water therms
+names(CF3)[names(CF3) == "TS_3_1_1"] <- "TS_2_0_1"
+names(CF3)[names(CF3) == "TS_3_2_1"] <- "TS_2_05_1"
+names(CF3)[names(CF3) == "TS_3_3_1"] <- "TS_2_1_1"
+names(CF3)[names(CF3) == "TS_3_4_1"] <- "TS_2_2_1"
+names(CF3)[names(CF3) == "TS_3_5_1"] <- "TS_2_3_1"
+names(CF3)[names(CF3) == "TS_3_6_1"] <- "TS_2_4_1"
+names(CF3)[names(CF3) == "TS_3_7_1"] <- "TS_2_5_1"
+names(CF3)[names(CF3) == "TS_3_8_1"] <- "TS_2_6_1"
+names(CF3)[names(CF3) == "TS_3_9_1"] <- "TS_2_7_1"
+names(CF3)[names(CF3) == "TS_3_10_1"] <- "TS_2_8_1"
+names(CF3)[names(CF3) == "TS_3_11_1"] <- "TS_2_9_1"
+names(CF3)[names(CF3) == "TS_3_12_1"] <- "TS_2_10_1"
+
+names(CF3)[names(CF3) == "TS_4_1_1"] <- "TS_1_0_1"
+names(CF3)[names(CF3) == "TS_4_2_1"] <- "TS_1_05_1"
+names(CF3)[names(CF3) == "TS_4_3_1"] <- "TS_1_1_1"
+names(CF3)[names(CF3) == "TS_4_4_1"] <- "TS_1_2_1"
+names(CF3)[names(CF3) == "TS_4_5_1"] <- "TS_1_3_1"
+names(CF3)[names(CF3) == "TS_4_6_1"] <- "TS_1_4_1"
+names(CF3)[names(CF3) == "TS_4_7_1"] <- "TS_1_5_1"
+names(CF3)[names(CF3) == "TS_4_8_1"] <- "TS_1_6_1"
+names(CF3)[names(CF3) == "TS_4_9_1"] <- "TS_1_7_1"
+names(CF3)[names(CF3) == "TS_4_10_1"] <- "TS_1_8_1"
+names(CF3)[names(CF3) == "TS_4_11_1"] <- "TS_1_9_1"
+names(CF3)[names(CF3) == "TS_4_12_1"] <- "TS_1_10_1"
+
+
+```
+## Merge
+```{r}
+
+#Merge
+merged_df = rbind.fill(CF1,CF2,CF3)
+
+merged_df$DOY = yday(merged_df$date)
+
+merged_df$year = substr(merged_df$date,1,4)
+
+
+```
+
+# Daily Average
+```{r}
+
+avg = timeAverage(
+  merged_df,
+  avg.time = 'day',
+  data.thresh = 40,
+  statistic = 'mean',
+  fill = TRUE
+)
+
+
+df = timeAverage(
+  CF3,
+  avg.time = 'day',
+  data.thresh = 40,
+  statistic = 'mean',
+  fill = TRUE
+)
+
+
+```
+## time separations 
+```{r}
+avg$year = substr(avg$date,1,4)
+avg$year <- factor(avg$year)
+
+avg$DOY = yday(avg$date)
+avg$DOY <- as.numeric(avg$DOY)
+
+df$year = substr(df$date,1,4)
+df$year <- factor(df$year)
+
+df$DOY = yday(df$date)
+df$DOY <- as.numeric(df$DOY)
+
+df$month = as.numeric(format(df$ts,'%m'))
+
+
+```
+
+
+# Raster Column (Not going to work right now because I removed the date column)
+format is |Date|SoilT|SoilDepth|
+```{r}
+
+dfnew = df
+dfnew$TS_2_0_1 = dfnew$TS_2_05_1
+
+
+ras <- dfnew[,c('date',
+            'TS_2_0_1', 
+            'TS_2_1_1', 
+            'TS_2_2_1', 
+            'TS_2_3_1',
+            'TS_2_4_1',
+            'TS_2_5_1', 
+            'TS_2_6_1', 
+            'TS_2_7_1', 
+            'TS_2_8_1',
+            'TS_2_9_1')]
+
+
+# Reshape the data into long format
+ras <- ras %>%
+  pivot_longer(
+    cols = -date, 
+    names_to = "SoilDepth",
+    values_to = "SoilTemperature",
+    names_pattern = "TS_2_(\\d+)_1" 
+  ) %>%
+  mutate(SoilDepth = as.numeric(gsub("TS_2_", "", SoilDepth)) * 10) 
+
+# Extract Date from column
+ras$date <- as.Date(ras$date)
+
+ras <- ras %>%
+  filter(date >= as.Date("2023-01-01") & date <= as.Date("2023-12-31"))
+# Select and reorder columns
+ras <- ras %>%
+  dplyr::select(date, SoilDepth, SoilTemperature)
+
+
+library(viridis)
+
+ggplot(ras, aes(x = date, y = SoilDepth, fill = SoilTemperature)) +
+  geom_raster(interpolate = TRUE)+
+  scale_fill_viridis(option = "turbo") +  
+  labs(x = "Date", y = "Soil Depth", fill = "Soil Temperature") +
+  scale_y_reverse() +  # Invert the y-axis
+  theme_minimal()
+
+ras_plot = ggplot(ras, aes(x = date, y = SoilDepth, fill = SoilTemperature))+
+  geom_raster(interpolate = TRUE) +
+  scale_fill_viridis(option = "turbo") +  
+  labs(x = "Date", y = "Soil Depth (cm)", fill = "Soil Temperature") +
+  scale_x_date(expand = expansion(c(0, 0.00413))) + 
+  scale_y_reverse(expand = expansion(c(0, 0))) +  # Invert the y-axis
+  theme(
+    axis.text.x = element_text(size = 16),   
+    axis.text.y = element_text(size = 16),  
+    axis.title.y = element_text(size = 18), 
+    axis.title.x = element_text(size = 18),
+    legend.title = element_text(size = 18), 
+    legend.text = element_text(size = 14),
+    legend.key.size = unit(1.5, "cm"),
+  )
+
+ras_plot
+
+ggsave('C:/Permafrost Pathways/ras_plot.png', ras_plot, width = 9, height = 4.5)
+```
+removing date bc of conflict with ts column 
+```{r}
+
+df <- df %>% select(-date)
+```
+# Graphs
+## multi-year annual plot (rough)
+```{r,warning = FALSE}
+
+ggplot(data = avg)+theme_bw()+
+  geom_point(aes(DOY,FCH4,color = year))+
+  geom_hline(yintercept = 0)+
+  scale_x_continuous(limits = c(110,340))+
+  scale_y_continuous (expression('CH4 Flux ('*n*mol~m^-2~s^-1*')'),
+                      limits = c(-10,150))+
+  labs(color='Year')
+```
+# Met Timeseries
+```{r}
+#Soil T
+st5 = ggplot(data = df)+theme_bw()+
+  geom_point(aes(ts,FCH4),color = "salmon",pch=20,size = 2,alpha=0.75)+
+  geom_line(aes(x = ts, y = TS_2_05_1*5), color = '#087d94',size = .6) + 
+  geom_smooth(aes(x = ts, y = FCH4), color = "salmon", method = 'loess',span = 0.09,size = .7)+  
+  geom_hline(yintercept = 0)+
+  scale_y_continuous (expression('CH'[4]~'Flux ('*n*mol~m^-2~s^-1*')'),
+                      limits = c(-70,100),
+  sec.axis = sec_axis(~./5, name = "Soil Temperature 5cm (°C)")
+  ) +
+  scale_x_datetime(limits = as.POSIXct(c('2023-01-1', '2023-12-31')))+
+  labs(x = NULL)+
+  theme(
+    axis.text.x = element_text(size = 16),   
+    axis.text.y = element_text(size = 16),  
+    axis.title.y = element_text(size = 18) 
+  )
+st5
+#SWC
+swc = ggplot(data = df)+theme_bw()+
+  geom_point(aes(ts,FCH4),color = "salmon",pch=20,size = 2,alpha=0.75)+
+  geom_line(aes(x = ts, y = SWC_2_1_1), color = '#087d94',size = .6) + 
+  geom_smooth(aes(x = ts, y = FCH4), color = "salmon", method = 'loess',span = 0.09,size = .7)+  
+  geom_hline(yintercept = 0)+
+  scale_y_continuous (expression('CH'[4]~'Flux ('*n*mol~m^-2~s^-1*')'),
+                      limits = c(-5,100),
+  sec.axis = sec_axis(~., name = "Volumetric Water Content (%)")
+  ) +
+  scale_x_datetime(limits = as.POSIXct(c('2023-01-1', '2023-12-31')))+
+  labs(x = NULL)+
+  theme(
+    axis.text.x = element_text(size = 16),   
+    axis.text.y = element_text(size = 16),  
+    axis.title.y = element_text(size = 18) 
+  )
+
+#Rain
+rain = ggplot(data = df)+theme_bw()+
+  geom_point(aes(ts,FCH4),color = "salmon",pch=20,size = 2,alpha=0.75)+
+  geom_smooth(aes(x = ts, y = FCH4), color = "salmon", method = 'loess',span = 0.09,size = .7)+  
+  geom_bar(aes(x = ts, y = P * 48 * 2), stat = "identity", fill = '#087d94', alpha = 0.8) +
+  geom_hline(yintercept = 0)+
+  scale_y_continuous (expression('CH'[4]~'Flux ('*n*mol~m^-2~s^-1*')'),
+                      limits = c(-5,100),
+  sec.axis = sec_axis(~./2, name = "Precip (mm)")
+  )+
+  scale_x_datetime(limits = as.POSIXct(c('2023-01-1', '2023-12-31')))+
+  labs(x = NULL)+
+  theme(
+    axis.text.x = element_text(size = 16),   
+    axis.text.y = element_text(size = 16),  
+    axis.title.y = element_text(size = 18) 
+  )
+
+#GPP
+GPP = ggplot(data = df)+theme_bw()+
+  geom_point(aes(ts,FCH4),color = "salmon",pch=20,size = 2,alpha=0.75)+
+  geom_smooth(aes(x = ts, y = FCH4), color = "salmon", method = 'loess',span = 0.09,size = .7)+  
+  geom_line(aes(x = ts, y = GPP_F*30), color = '#087d94',size = .6) + 
+  geom_hline(yintercept = 0)+
+  scale_y_continuous (expression('CH'[4]~'Flux ('*n*mol~m^-2~s^-1*')'),
+                      limits = c(-5,100),
+  sec.axis = sec_axis(~./30, name = 'GPP ('*u*mol~m^-2~s^-1*')')
+  )+
+  scale_x_datetime(limits = as.POSIXct(c('2023-01-1', '2023-12-31')))+
+  labs(x = NULL) +
+  theme(
+    axis.text.x = element_text(size = 16),   
+    axis.text.y = element_text(size = 16),  
+    axis.title.y = element_text(size = 18) 
+  )
+  
+
+GPP
+combined_plot <- plot_grid(st5, swc, GPP, ncol = 1)
+print(combined_plot)
+
+ggsave('C:/Permafrost Pathways/combined_plot.png', combined_plot, width = 16, height = 12)
+```
+
+
+# NA DF
+```{r}
+
+NAdf <- na.omit(df[, c("ts","FCH4", "TS_2_05_1", "SWC_2_1_1", "GPP_F")])
+```
+
+
+
+# Model Runs
+
+## LM Runs 0, 5, 10 cm
+```{r}
+#0 cm (R-squared 0.73)
+TS0logCH4 = lm(log10(FCH4+5)~TS_1_0_1,data = df)
+summary((TS0logCH4))
+
+
+#5cm (R-squared 0.76) with NAdf and non-NAdf, all is the same
+TS5logCH4 = lm(log10(FCH4+5)~TS_2_05_1,data = NAdf)
+summary((TS5logCH4))
+
+
+TS5logCH4 = lm(log10(FCH4+5)~TS_2_05_1,data = df)
+summary((TS5logCH4))
+
+
+
+#5cm (R-squared 0.72)
+TS10logCH4 = lm(log10(FCH4+5)~TS_2_1_1,data = df)
+summary((TS10logCH4))
+
+#TA (R-squared 0.72)
+TAlogCH4 = lm(log10(FCH4+5)~TA,data = df)
+summary((TAlogCH4))
+
+
+```
+
+## Trendline 0 cm
+```{r}
+# Define the exponential trend function
+exponential_trend_0 <- function(x) {
+  10^(1.20111 + 0.04328664 * x) - 5
+}
+
+# Determine the number of rows in your original dataframe df
+num_rows_df <- nrow(df)
+
+# Create the new dataframe with the same number of rows as df, removing NA values
+new_data <- data.frame(TS_1_0_1 = seq(min(na.omit(df$TS_1_0_1)), max(na.omit(df$TS_1_0_1)), length.out = num_rows_df))
+new_data$predicted <- exponential_trend_0(new_data$TS_1_0_1)
+
+
+#na.omit(df$TS_2_05_1) removes NA values from the TS_2_05_1 column of your dataframe df, returning a vector containing only the non-NA values.
+
+#min() and max() functions are then applied to this vector to calculate the minimum and maximum values of TS_2_05_1 while ignoring NA values.
+
+#The length.out argument in seq() ensures that the sequence has the same length as the filtered TS_2_05_1 values, thus addressing the issue of mismatched row numbers.
+```
+## 0 cm hysteresis graph
+```{r}
+
+
+cm_0 = ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = TS_1_0_1, y = FCH4, fill = month), pch = 21, size = 5, alpha = 0.75) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(x = TS_1_0_1, y = exponential_trend_0(TS_1_0_1)), color = "black", size = 1.45) +
+ scale_y_continuous(expression('CH'[4]~'Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+                     limits = c(-8, 150)) +
+  scale_x_continuous(expression('Surface Temperature (°C)'),
+                     limits = c(-15, 20)) +
+  labs(color = 'DOY') +
+  theme(legend.position = "none")+
+  scale_fill_gradientn(colours = (brewer.pal(9, 'GnBu')))+
+  theme(
+    axis.text.x = element_text(size = 20),   
+    axis.text.y = element_text(size = 20),  
+    axis.title.y = element_text(size = 22),  
+    axis.title.x = element_text(size = 22),
+  )
+cm_0
+```
+## Trendline 5 cm
+```{r}
+# Define the exponential trend function
+exponential_trend_5 <- function(x) {
+  10^(1.155294 + 0.0502205 * x) - 5
+}
+
+# Determine the number of rows in your original dataframe df
+num_rows_df <- nrow(df)
+
+# Create the new dataframe with the same number of rows as df, removing NA values
+new_data <- data.frame(TS_2_05_1 = seq(min(na.omit(df$TS_2_05_1)), max(na.omit(df$TS_2_05_1)), length.out = num_rows_df))
+new_data$predicted <- exponential_trend_5(new_data$TS_2_05_1)
+
+
+#na.omit(df$TS_2_05_1) removes NA values from the TS_2_05_1 column of your dataframe df, returning a vector containing only the non-NA values.
+
+#min() and max() functions are then applied to this vector to calculate the minimum and maximum values of TS_2_05_1 while ignoring NA values.
+
+#The length.out argument in seq() ensures that the sequence has the same length as the filtered TS_2_05_1 values, thus addressing the issue of mismatched row numbers.
+```
+## 5 cm hysteresis graph
+```{r}
+
+
+cm_5 = ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = TS_2_05_1, y = FCH4, fill = month), pch = 21, size = 5, alpha = 0.75) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(x = TS_2_05_1, y = exponential_trend_5(TS_2_05_1)), color = "black", size = 1.45) +
+ scale_y_continuous(expression('CH'[4]~'Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+                     limits = c(-8, 150)) +
+  scale_x_continuous(expression('Temperature 5 cm (°C)'),
+                     limits = c(-15, 18)) +
+  labs(color = 'DOY') +
+  theme(legend.position = "none")+
+  scale_fill_gradientn(colours = brewer.pal(9, 'GnBu'))+
+  theme(
+    axis.text.x = element_text(size = 20),   
+    axis.text.y = element_text(size = 20),  
+    axis.title.y = element_text(size = 22),  
+    axis.title.x = element_text(size = 22),
+  )
+cm_5
+```
+
+
+## Trendline 10 cm
+```{r}
+# Define the exponential trend function
+exponential_trend_10 <- function(x) {
+  10^(1.172676 + 0.05492273 * x) - 5
+}
+
+# Determine the number of rows in your original dataframe df
+num_rows_df <- nrow(df)
+
+# Create the new dataframe with the same number of rows as df, removing NA values
+new_data <- data.frame(TS_2_1_1 = seq(min(na.omit(df$TS_2_1_1)), max(na.omit(df$TS_2_1_1)), length.out = num_rows_df))
+new_data$predicted <- exponential_trend_10(new_data$TS_2_1_1)
+
+
+#na.omit(df$TS_2_05_1) removes NA values from the TS_2_05_1 column of your dataframe df, returning a vector containing only the non-NA values.
+
+#min() and max() functions are then applied to this vector to calculate the minimum and maximum values of TS_2_05_1 while ignoring NA values.
+
+#The length.out argument in seq() ensures that the sequence has the same length as the filtered TS_2_05_1 values, thus addressing the issue of mismatched row numbers.
+```
+## 10 cm hysteresis graph
+```{r}
+
+
+cm_10 = ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = TS_2_1_1, y = FCH4, fill = month), pch = 21, size = 5, alpha = 0.75) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(x = TS_2_1_1, y = exponential_trend_10(TS_2_1_1)), color = "black", size = 1.45) +
+  scale_y_continuous(expression('CH'[4]~'Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+                     limits = c(-8, 150)) +
+  scale_x_continuous(expression(' Temperature 10 cm(°C)'),
+                     limits = c(-15, 16)) +
+  labs(color = 'DOY') +
+  theme(legend.position = "none")+
+  scale_fill_gradientn(colours = (brewer.pal(9, 'GnBu')))+
+  theme(
+    axis.text.x = element_text(size = 20),   
+    axis.text.y = element_text(size = 20),  
+    axis.title.y = element_text(size = 22),  
+    axis.title.x = element_text(size = 22),
+  )
+cm_10
+```
+
+```{r}
+hyst_plot <- plot_grid(cm_0, cm_5, cm_10, ncol = 1)
+
+print(hyst_plot)
+
+
+ggsave('C:/Permafrost Pathways/hyst_plot.png', hyst_plot, width = 16, height = 12)
+```
+
+## Residual Analysis (ST5)
+
+```{r}
+
+# NEED TO USE NA df for same variable lengths
+TS5logCH4_residuals <- residuals(TS5logCH4)
+# TS5 and VWC
+TS5_VWC = lm(SWC_2_1_1~TS_2_05_1, data = NAdf)
+
+TS5_VWC_residuals <- residuals(TS5_VWC)
+
+PCOR_TS5_VWC <- lm(TS5logCH4_residuals ~ TS5_VWC_residuals)
+summary(PCOR_TS5_VWC)
+# TS5 and GPP
+TS5_GPP = lm(GPP_F~TS_2_05_1, data = NAdf)
+
+TS5_GPP_residuals <- residuals(TS5_GPP)
+
+PCOR_TS5_GPP <- lm(TS5logCH4_residuals ~ TS5_GPP_residuals)
+summary(PCOR_TS5_GPP)
+
+hist(PCOR_TS5_GPP$residuals)
+shapiro.test(PCOR_TS5_GPP$residuals)
+
+plot(TS5logCH4_residuals,TS5_GPP_residuals)
+```
+#Re-insert residuals
+#Spring Analysis
+```{r}
+# add log10(FCH4+5) residuals to NAdf data frame
+NAdf$TS5logCH4_residuals = TS5logCH4_residuals
+
+#create new NAdf for spring period only
+spring = subset(NAdf, NAdf$ts >= '2023-5-3' & NAdf$ts <= '2023-6-14')
+
+#summarize and visualize df
+summary(spring$TS5logCH4_residuals)
+hist(spring$TS5logCH4_residuals)
+
+#re-insert residuals with correct formula 10^residuals +5
+spring$regresid = (10^spring$TS5logCH4_residuals) +5 
+hist(spring$regresid)
+summary(spring$regresid)
+
+# change units to mgC /day
+spring$regresid_daily_mgc = spring$regresid*60*60*24/(10^6)*12
+sum(spring$regresid_daily_mgc)
+
+```
+
+### p RESIDUAL
+```{r}
+# Model residuals with P
+P_FCH4_residuals <- lm(TS5logCH4_residuals ~ LAGGED_P, data = NAdf)
+summary(P_FCH4_residuals)
+```
+
+
+
+
+
+
+## LM 5 model
+```{r, warning=FALSE}
+
+# Extract the predicted log10(FCH4 + 5) values from the model
+predicted_FCH4 <- predict(TS5logCH4)
+
+# Exponentiate the predicted log10(FCH4 + 5) values to obtain predicted FCH4 values
+p_FCH4 <- 10^predicted_FCH4 - 5
+
+# Plot the predicted FCH4 values against the actual FCH4 values
+plot(p_FCH4, pch = 16, col = "blue", xlab = "Actual FCH4", ylab = "Predicted FCH4", main = "Predicted vs Actual FCH4")
+
+
+
+
+# Extract the subset of observations used for fitting the model
+df_subset <- df[!is.na(df$TS_2_05_1), ]
+
+# Predict CH4 values for the subset of observations
+predicted_FCH4_subset <- 10^predict(TS5logCH4, newdata = df_subset) - 5
+
+# Add the predicted CH4 values to your dataframe df_subset
+df_subset$Predicted_CH4 <- predicted_FCH4_subset
+
+# Merge the predicted CH4 values back to the original dataframe df
+df <- merge(df, df_subset[, c("ts", "Predicted_CH4")], by = "ts", all.x = TRUE)
+
+# Check the structure of your dataframe to confirm that the new column has been added
+str(df)
+
+
+plot(df$FCH4,df$Predicted_CH4)
+
+
+ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = ts, y = FCH4, color = "Observed CH4"), alpha = 0.5) +
+  geom_smooth(aes(x = ts, y = FCH4, color = "Observed CH4"), method = 'loess',span = 0.25)+
+  geom_point(aes(x = ts, y = Predicted_CH4, color = "Predicted CH4"), alpha = 0.5) +
+  geom_smooth(aes(x = ts, y = Predicted_CH4, color = "Predicted CH4"), method = 'loess',span = 0.25)+
+  geom_hline(yintercept = 0) +
+  scale_y_continuous(expression('CH4 Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'), limits = c(-6, 135)) +
+  scale_x_datetime(limits = as.POSIXct(c('2022-08-6', '2023-12-31'))) +
+  labs(color = "CH4 Values") +
+  scale_color_manual(values = c("Observed CH4" = "salmon", "Predicted CH4" = "blue")) +
+  guides(color = guide_legend(title = "CH4 Values"))
+
+
+ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = TS_2_05_1, y = FCH4, fill = month), pch = 21, size = 3, alpha = 0.75) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(x = TS_2_05_1, y = exponential_trend_5(TS_2_05_1)), color = "black", size = 1.3) +
+  scale_y_continuous(expression('CH4 Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+                     limits = c(-8, 150)) +
+  scale_x_continuous(expression('Temperature 5 cm (°C)'),
+                     limits = c(-15, 20)) +
+  labs(color = 'DOY') +
+  scale_fill_gradientn(colours = brewer.pal(9, 'Reds'))
+
+
+ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = TS_2_1_1, y = FCH4, fill = month), pch = 21, size = 3, alpha = 0.75) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(x = TS_2_05_1, y = exponential_trend_5(TS_2_05_1)), color = "black", size = 1.3) +
+  scale_y_continuous(expression('CH4 Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+                     limits = c(-8, 150)) +
+  scale_x_continuous(expression('Temperature 5 cm (°C)'),
+                     limits = c(-15, 20)) +
+  labs(color = 'DOY') +
+  scale_fill_gradientn(colours = brewer.pal(9, 'Reds'))
+
+ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = TS_1_0_1, y = FCH4, fill = month), pch = 21, size = 3, alpha = 0.75) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(x = TS_2_05_1, y = exponential_trend_5(TS_2_05_1)), color = "black", size = 1.3) +
+  scale_y_continuous(expression('CH4 Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+                     limits = c(-8, 150)) +
+  scale_x_continuous(expression('Temperature 5 cm (°C)'),
+                     limits = c(-15, 20)) +
+  labs(color = 'DOY') +
+  scale_fill_gradientn(colours = brewer.pal(9, 'Reds'))
+```
+
+
+
+
+## LM Runs GPP
+
+
+```{r}
+# Consider using ifelse statement for when there is real CO2 data available to have the more accurate data product
+
+#GPP_DT (R-squared 0.66)
+GPP_DTCH4 = lm(FCH4~GPP_DT,data = df)
+summary((GPP_DTCH4))
+
+#GPP_F (R-squared 0.76) (feels sketch using this bc gap-filled)
+GPP_FCH4 = lm(FCH4~GPP_F,data = df)
+summary((GPP_FCH4))
+
+
+
+```
+
+
+
+## Time lag 
+```{r}
+#Rain
+ccf(df$P,df$FCH4, na.action = na.pass)
+#Soil T
+ccf(df$TS_2_05_1,df$FCH4, na.action = na.pass)
+#VWC
+ccf(df$SWC_2_1_1,df$FCH4, na.action = na.pass)
+#GPP
+ccf(df$GPP_F,df$FCH4, na.action = na.pass)
+
+```
+
+
+
+## Seasons breakdown 
+Our onset of melt is DOY 126, theirs is 166
+Our onset and their onset of fall is similar (DOY 305-315)
+```{r}
+
+```
+
+
+
+
+# seasonal change
+Fall (260-320) split down the middle with pre and post freeze
+Spring (113-153) melt is: 123-132 few different endings
+```{r,warning = FALSE}
+ggplot(data = avg) +
+  theme_bw() +
+  geom_line(aes(x = ts, y = G_1_1_1), color = 'red') +  
+  geom_line(aes(x = ts, y = TA*10), color = 'blue') +  
+  geom_line(aes(x = ts, y = PPFD_OUT/10), color = 'green') +
+  geom_line(aes(x = ts, y = D_SNOW), color = 'pink') +
+  geom_vline(xintercept = as.POSIXct('2023-5-12'), linetype = 'dotdash')+
+  geom_vline(xintercept = as.POSIXct('2023-5-3'), linetype = 'dotdash')+
+  geom_hline(yintercept = 0) +
+  scale_y_continuous(
+    name = expression('CH4 Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+    limits = c(-50, 200))+
+  scale_x_datetime(limits = as.POSIXct(c('2023-4-20', '2023-6-16')))
+ 
+
+ggplot(data = avg) +
+  theme_bw() +
+  geom_point(aes(x = ts, y = FCH4), color = 'salmon') +
+  geom_line(aes(x = ts, y = TS_2_05_1*4), color = 'blue') +  
+  geom_hline(yintercept = 0) +
+  scale_y_continuous(
+    name = expression('CH4 Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+    limits = c(-50, 95),
+    sec.axis = sec_axis(~./4, name = "Soil Temperature 10cm (°C)")
+  ) +
+  scale_x_datetime(limits = as.POSIXct(c('2022-09-17', '2022-11-16')))
+
+
+ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = ts, y = FCH4), color = 'salmon') +
+  geom_smooth(aes(x = ts, y = FCH4, color = "FCH4"), method = 'loess',span = 0.15)+
+  geom_line(aes(x = ts, y = TS_2_05_1*4), color = 'blue') +  
+  geom_vline(xintercept = as.POSIXct('2023-6-23'), linetype = 'dotted')+
+  geom_hline(yintercept = 0) +
+  scale_y_continuous(
+    name = expression('CH4 Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+    limits = c(-20, 95),
+    sec.axis = sec_axis(~./4, name = "Soil Temperature 10cm (°C)")
+  ) +
+  scale_x_datetime(limits = as.POSIXct(c('2023-05-1', '2023-6-30')))
+```
+# Spring differences 
+```{r,warning=FALSE}
+ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = ts, y = FCH4_F*1000), color = 'salmon') +
+  geom_point(aes(x = ts, y = Predicted_CH4), color = '#00BFC4') +
+  geom_line(aes(x = ts, y = TS_2_05_1*5), color = 'blue') +  
+  geom_line(aes(x = ts, y = TS_2_1_1*5), color = 'darkgreen') + 
+  geom_line(aes(x = ts, y = TS_2_2_1*5), color = 'orange') + 
+  geom_line(aes(x = ts, y = TS_2_3_1*5), color = 'red') + 
+  geom_smooth(aes(x = ts, y = FCH4, color = "FCH4"), method = 'loess',span = 0.115)+
+  geom_smooth(aes(x = ts, y = Predicted_CH4, color = "Log 5 CH4"), method = 'loess',span = 0.115)+
+  geom_vline(xintercept = as.POSIXct('2023-4-23'))+
+  geom_vline(xintercept = as.POSIXct('2023-5-12'), linetype = 'longdash')+
+  geom_vline(xintercept = as.POSIXct('2023-5-3'), linetype = 'longdash')+
+  geom_vline(xintercept = as.POSIXct('2023-6-15'))+
+  geom_hline(yintercept = 0) +
+  scale_y_continuous(
+    name = expression('CH4 Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+    limits = c(-25, 95),
+    sec.axis = sec_axis(~./5, name = "Soil Temperature 10cm (°C)")
+  ) +
+  scale_x_datetime(limits = as.POSIXct(c('2023-04-11', '2023-7-14')))
+
+```
+# Winter comparison
+```{r}
+ggplot(data = df) +
+  theme_bw() +
+  geom_point(aes(x = ts, y = FCH4_F*1000), color = 'salmon') +
+  geom_point(aes(x = ts, y = Predicted_CH4), color = '#00BFC4') +
+  geom_smooth(aes(x = ts, y = FCH4, color = "FCH4"), method = 'loess',span = 0.115)+
+  geom_smooth(aes(x = ts, y = Predicted_CH4, color = "Log 5 CH4"), method = 'loess',span = 0.115)+
+  geom_vline(xintercept = as.POSIXct('2023-4-23'))+
+  geom_vline(xintercept = as.POSIXct('2023-5-12'), linetype = 'longdash')+
+  geom_vline(xintercept = as.POSIXct('2023-5-3'), linetype = 'longdash')+
+  geom_vline(xintercept = as.POSIXct('2023-6-15'))+
+  geom_vline(xintercept = as.POSIXct('2023-6-23'), linetype = 'dotted')+
+  geom_hline(yintercept = 0) +
+  scale_y_continuous(
+    name = expression('CH4 Flux (' * n * mol ~ m^-2 ~ s^-1 * ')'),
+    limits = c(-25, 15),
+    sec.axis = sec_axis(~./5, name = "Soil Temperature 10cm (°C)")
+  ) +
+  scale_x_datetime(limits = as.POSIXct(c('2023-01-1', '2023-4-30')))
+```
+
+# Spring pulse removed model
+
+```{r}
+#create new variable removing spring pulse in DF
+df$FCH4_no_spring = df$FCH4
+df$FCH4_no_spring = ifelse(df$ts >= '2023-5-3' & df$ts <= '2023-6-14' ,NA, df$FCH4_no_spring)
+
+#linear model with no spring (R^2 = 0.80)
+no_spring_TS5logCH4 = lm(log10(FCH4_no_spring+5)~TS_2_05_1,data = df)
+summary(no_spring_TS5logCH4)
+```
+
+
+## Separations and plots
+Spring will start at the onset of melt (5/3 DOY 124)
+```{r}
+
+df23 = df
+
+df23 <- df23 %>%
+  filter(ts >= as.POSIXct("2023-01-01") & ts <= as.POSIXct("2023-12-31"))
+
+
+df23 <- df23 %>%
+  mutate(
+      season = case_when(
+      (DOY >= 260 & DOY <= 320) ~ 'Zero Curtain', # 61 days
+      (DOY >= 124 & DOY <= 166) ~ 'Initial Thaw', # 43 days
+      (DOY >= 167 & DOY <= 259) ~ 'Growing Season', # 93 days
+      (DOY >= 321 | DOY <= 123) ~ 'Frozen', # 168 days    #Math is weird here
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  filter(year == 2023)
+    
+
+seconds_in_a_day <- 86400  # 24 hours * 60 minutes * 60 seconds
+
+seasonal_cumulative <- df23 %>%
+  group_by(season) %>%
+  summarize(
+    cumulative_FCH_F = sum((FCH4_F), na.rm = TRUE)*1000*0.01604*seconds_in_a_day/1e6,
+    cumulative_Predicted_CH4 = sum(Predicted_CH4, na.rm = TRUE)*0.01604*seconds_in_a_day/1e6
+  )
+
+print(seasonal_cumulative)
+
+# these values are now in g/m^-2,day^-1
+```
+
+```{r}
+
+# Reshape the data for plotting
+days_in_season <- data.frame(
+  season = c("Zero Curtain", "Initial Thaw", "Growing Season", "Frozen"),
+  days = c(61, 43, 93, 168)
+)
+
+seasonal_cumulative_long <- seasonal_cumulative %>%
+  pivot_longer(
+    cols = c(cumulative_FCH_F, cumulative_Predicted_CH4), 
+    names_to = "Data", 
+    values_to = "cumulative_value"
+  ) %>%
+  mutate(
+    Data = recode(
+      Data,
+      "cumulative_FCH_F" = "Gap-Filled",
+      "cumulative_Predicted_CH4" = "Soil T Model"
+    )
+  )%>%
+  left_join(days_in_season, by = "season") %>%
+  mutate(
+    cumulative_value_per_season = cumulative_value * days
+  )
+
+
+
+# Create the bar chart
+# Daily 
+daily_bar = ggplot(seasonal_cumulative_long, aes(x = season, y = cumulative_value, fill = Data)) + theme_bw()+
+  geom_hline(yintercept = 0)+
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    x = "Season", 
+    y = expression('Cumulative Daily Flux (g CH'[4] ~ m^-2 ~ day^-1))
+daily_bar
+
+ggsave('C:/Permafrost Pathways/daily_bar.png', daily_bar, width = 8, height = 5)
+
+#Season
+seasonal_bar = ggplot(seasonal_cumulative_long, aes(x = season, y = cumulative_value_per_season, fill = Data)) + theme_bw()+
+  geom_hline(yintercept = 0)+
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    x = "Season", 
+    y = expression('Cumulative Seasonal Flux (g CH'[4] ~ m^-2 ~ season^-1))
+seasonal_bar
+
+ggsave('C:/Permafrost Pathways/seasonal_bar.png', seasonal_bar, width = 8, height = 5)
+
+```
+
+```{r}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
