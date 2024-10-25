@@ -1,3 +1,6 @@
+#photos
+*.jpg
+
 # Flux data
 *.csv
 
