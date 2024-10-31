@@ -43,8 +43,14 @@ library(RColorBrewer)
 ```
 
 
+#Use CA_CF3_HH_<dates> file here
+Gapfill 2024 using 2023 data, but don't re-gapfill 2023 
+
 ```{r, warning=FALSE, echo=FALSE}
-df3 = fread('C:/Users/dtrangmoe/Documents/Churchill/Data/CA_CF3.csv', na.strings="-9999")
+# df3 = fread('C:/Users/dtrangmoe/Documents/Churchill/Data/CA_CF3.csv', na.strings="-9999")
+
+df3 = fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202208062330_202312301700.csv', na.strings="-9999")
+
 ```
 
 
@@ -299,8 +305,8 @@ rm(df_avg_night)
 
 ```{r}
 
-write.csv(x = df,file = 'C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_CF1_CF3.csv',row.names = F,quote = F)
+write.csv(x = df,file = 'C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_CF1_CF3_HH.csv',row.names = F,quote = F)
 
-write.csv(x = df_avg,file = 'C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_Avg_CF1_CF3.csv',row.names = F,quote = F)
+write.csv(x = df_avg,file = 'C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_Avg_CF1_CF3_HH.csv',row.names = F,quote = F)
 
 ```
