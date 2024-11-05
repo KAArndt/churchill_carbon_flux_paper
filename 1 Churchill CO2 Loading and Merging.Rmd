@@ -51,7 +51,7 @@ Gapfill 2024 using 2023 data, but don't re-gapfill 2023
 
 df23 <- fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202208062330_202312301700.csv', na.strings="-9999")
 
-df24 <- fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202401010000_202409301800.csv', na.strings="-9999")
+df24 <- fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202312301700_202409301800.csv', na.strings="-9999")
 
 df3 <- rbind(df23, df24)
 
@@ -71,11 +71,7 @@ df3$TIMESTAMP_START = as.POSIXct(df3$TIMESTAMP_START, tz="UTC", format = "%Y%m%d
 
 df3$TIMESTAMP <- df3$TIMESTAMP_END
 
-```
-
-Create continuous time variable
-
-```{r}
+# Create continuous time variable
 
 tsmin <- min(df3$TIMESTAMP)
 tsmax <- max(df3$TIMESTAMP)
@@ -234,9 +230,6 @@ names(df1)[names(df1) == "NEE_VUT_REF"] <- "FC_F"
 names(df1)[names(df1) == "RECO_NT_VUT_REF"] <- "RECO"
 names(df1)[names(df1) == "LE_F_MDS"] <- "LE"
 names(df1)[names(df1) == "H_F_MDS"] <- "H"
-
-
-
 
 
 
