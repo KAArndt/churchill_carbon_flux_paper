@@ -49,7 +49,12 @@ Gapfill 2024 using 2023 data, but don't re-gapfill 2023
 ```{r, warning=FALSE, echo=FALSE}
 # df3 = fread('C:/Users/dtrangmoe/Documents/Churchill/Data/CA_CF3.csv', na.strings="-9999")
 
-df3 = fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202208062330_202312301700.csv', na.strings="-9999")
+df23 <- fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202208062330_202312301700.csv', na.strings="-9999")
+
+df24 <- fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202401010000_202409301800.csv', na.strings="-9999")
+
+df3 <- rbind(df23, df24)
+
 
 ```
 
@@ -64,8 +69,24 @@ df3$TIMESTAMP_START = as.character(df3$TIMESTAMP_START)
 df3$TIMESTAMP_END = as.POSIXct(df3$TIMESTAMP_END, tz="UTC", format = "%Y%m%d%H%M")
 df3$TIMESTAMP_START = as.POSIXct(df3$TIMESTAMP_START, tz="UTC", format = "%Y%m%d%H%M")
 
+df3$TIMESTAMP <- df3$TIMESTAMP_END
+
 ```
 
+Create continuous time variable
+
+```{r}
+
+tsmin <- min(df3$TIMESTAMP)
+tsmax <- max(df3$TIMESTAMP)
+
+ts <- data.frame(
+  TIMESTAMP = seq(tsmin, tsmax, by = "30 min")
+)
+
+df3 <- left_join(ts, df3, by = "TIMESTAMP")
+
+```
 
 ### CA CF1 Partitioned Data
 
@@ -84,6 +105,8 @@ df1$TIMESTAMP_START = as.character(df1$TIMESTAMP_START)
 
 df1$TIMESTAMP_END = as.POSIXct(df1$TIMESTAMP_END, tz="UTC", format = "%Y%m%d%H%M")
 df1$TIMESTAMP_START = as.POSIXct(df1$TIMESTAMP_START, tz="UTC", format = "%Y%m%d%H%M")
+
+df1$TIMESTAMP = df1$TIMESTAMP_END
 
 
 ```
@@ -219,7 +242,6 @@ names(df1)[names(df1) == "H_F_MDS"] <- "H"
 
 df <- rbind.fill(df1, df3)
 
-df$TIMESTAMP = df$TIMESTAMP_END
 
 
 ```
@@ -252,7 +274,7 @@ df <- df %>%
 
 ```{r}
 
-df$date = as.Date(df$TIMESTAMP_END)
+df$date = as.Date(df$TIMESTAMP)
 
 date = unique(df$date)
 
@@ -305,8 +327,8 @@ rm(df_avg_night)
 
 ```{r}
 
-write.csv(x = df,file = 'C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_CF1_CF3_HH.csv',row.names = F,quote = F)
+write.csv(x = df,file = 'C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_CF1_CF3_HH_24.csv',row.names = F,quote = F)
 
-write.csv(x = df_avg,file = 'C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_Avg_CF1_CF3_HH.csv',row.names = F,quote = F)
+write.csv(x = df_avg,file = 'C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_Avg_CF1_CF3_HH_24.csv',row.names = F,quote = F)
 
 ```
