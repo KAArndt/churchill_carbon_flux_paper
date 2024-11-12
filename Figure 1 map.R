@@ -19,7 +19,7 @@ library(data.table)
 
 #personal API key, REMOVE BEFORE PUSHING TO GIT!!!!!!!!!!!!!!
 register_google(key = '')
-
+#tester
 #coordinates of the churchill tower
 coords = c(-93.830758,58.665705)
 
