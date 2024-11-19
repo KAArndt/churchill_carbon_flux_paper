@@ -36,6 +36,7 @@ library(RColorBrewer)
 library(pracma)
 library(cowplot)
 library(nlme)
+library(gt)
 ```
 
 # Load data
@@ -563,7 +564,7 @@ df_23_24 <- df_23_24 %>%
 
 ```
 
-####Split Plots
+#### Split Plots
 
 Plot 5 on Ameriflux poster
 
@@ -999,17 +1000,58 @@ ggplot(filtered_data_ch4, aes(x = season, y = integral_value)) +
 
 ```
 
-# Average biomet by season
+# Season Average Table
 ```{r}
 
-df_avg <- df_23_24 %>%
+df_avg_biomet <- df_23_24 %>%
   group_by(season) %>%
   summarize(
-    avg_TA = mean(TA, na.rm = TRUE),
-    avg_TS_05 = mean(TS_2_05_1, na.rm = TRUE),
-    avg_D_SNOW = mean(D_SNOW, na.rm = TRUE),
-    avg_SWC = mean(SWC_1_1_1, na.rm = TRUE)
+    nee = round(mean(FC* 60 * (1/1000000) * 12 * 30 * 48, na.rm = TRUE), 3),
+    tair = round(mean(TA, na.rm = TRUE), 2),
+    tsoil5 = round(mean(TS_2_05_1, na.rm = TRUE), 2),
+    swc = round(mean(SWC_1_1_1, na.rm = TRUE), 2)
+    ) %>%
+    arrange(factor(season, levels = c("Fall Senescence 2022", "Winter 2022/2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023/2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024")))
+
+
+
+
+season_counts <- 
+  df_avg_23_24 %>%
+  filter(season %in% c("Fall Senescence 2022", "Winter 2022/2023", 
+                       "Snow Melt 2023", "Growing Season 2023", 
+                       "Fall Senescence 2023", "Winter 2023/2024", 
+                       "Snow Melt 2024", "Growing Season 2024", 
+                       "Fall Senescence 2024")) %>%
+  count(season)
+
+
+df_avg_biomet <- right_join(df_avg_biomet, season_counts, by = "season") 
+
+
+
+gt(df_avg_biomet,
+   rowname_col = "season") %>% 
+  tab_header(title = "Seasonal Averages",
+             subtitle = "Sept. 15th, 2022 to Sept 15th, 2024") %>%
+  cols_label(
+    tair = md("Air Temp<br><span style='font-size:10pt'>(&deg;C)</span>"),
+    tsoil5 = md("5cm Soil Temp<br><span style='font-size:10pt'>(&deg;C)</span>"),
+    swc = md("SWC<br><span style='font-size:10pt'>(m<sup>3</sup>m<sup>-3</sup>)</span>"),
+    nee = md("NEE<br><span style='font-size:10pt'>(gCm<sup>-2</sup>d<sup>-1</sup>)</span>"),
+    n = md("Length<br><span style='font-size:10pt'>(days)</span>")
+  )%>%
+  cols_width(
+    stub() ~ px(160)
+  )%>%
+  tab_style(
+    style = cell_text(align = "center"),
+    locations = list(
+      cells_body(),    # Center all data cells
+      cells_column_labels() # Center all column labels
     )
+  )
+  
 
 ```
 
