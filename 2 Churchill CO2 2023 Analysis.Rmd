@@ -63,6 +63,7 @@ df$day <- as.POSIXct(df$date, format = "%Y-%m-%d")
 df$DOY <- yday(df$TIMESTAMP)
 df_avg$DOY <- yday(df_avg$TIMESTAMP)
 
+
 #2023
 df_2023 <- df %>%
   filter(year(date) == 2023)
@@ -527,15 +528,16 @@ df_2024 <- df_2024 %>%
 
 Full dataset
 ```{r}
+
 df_avg_23_24 <- df_avg_23_24 %>%
   mutate(
       season = case_when(
       (date <= as.POSIXct("2022-10-15")) ~ 'Fall Senescence 2022',
-      (date >= as.POSIXct("2022-10-16") & date <= as.POSIXct("2023-05-04")) ~ 'Winter 2022/2023',
+      (date >= as.POSIXct("2022-10-16") & date <= as.POSIXct("2023-05-04")) ~ 'Winter 2022',
       (date >= as.POSIXct("2023-05-05") & date <= as.POSIXct("2023-06-11")) ~ 'Snow Melt 2023',
       (date >= as.POSIXct("2023-06-12") & date <= as.POSIXct("2023-09-05")) ~ 'Growing Season 2023',
       (date >= as.POSIXct("2023-09-06") & date <= as.POSIXct("2023-10-21")) ~ 'Fall Senescence 2023',
-      (date >= as.POSIXct("2023-10-22") & date <= as.POSIXct("2024-05-14")) ~ 'Winter 2023/2024',
+      (date >= as.POSIXct("2023-10-22") & date <= as.POSIXct("2024-05-14")) ~ 'Winter 2023',
       (date >= as.POSIXct("2024-05-15") & date <= as.POSIXct("2024-06-17")) ~ 'Snow Melt 2024',
       (date >= as.POSIXct("2024-06-18") & date <= as.POSIXct("2024-09-12")) ~ 'Growing Season 2024',
       (date >= as.POSIXct("2024-09-13")) ~ 'Fall Senescence 2024',
@@ -550,17 +552,34 @@ df_23_24 <- df_23_24 %>%
   mutate(
     season = case_when(
       (date <= as.POSIXct("2022-10-15")) ~ 'Fall Senescence 2022',
-      (date >= as.POSIXct("2022-10-16") & date <= as.POSIXct("2023-05-04")) ~ 'Winter 2022/2023',
+      (date >= as.POSIXct("2022-10-16") & date <= as.POSIXct("2023-05-04")) ~ 'Winter 2022',
       (date >= as.POSIXct("2023-05-05") & date <= as.POSIXct("2023-06-11")) ~ 'Snow Melt 2023',
       (date >= as.POSIXct("2023-06-12") & date <= as.POSIXct("2023-09-05")) ~ 'Growing Season 2023',
       (date >= as.POSIXct("2023-09-06") & date <= as.POSIXct("2023-10-21")) ~ 'Fall Senescence 2023',
-      (date >= as.POSIXct("2023-10-22") & date <= as.POSIXct("2024-05-14")) ~ 'Winter 2023/2024',
+      (date >= as.POSIXct("2023-10-22") & date <= as.POSIXct("2024-05-14")) ~ 'Winter 2023',
       (date >= as.POSIXct("2024-05-15") & date <= as.POSIXct("2024-06-17")) ~ 'Snow Melt 2024',
       (date >= as.POSIXct("2024-06-18") & date <= as.POSIXct("2024-09-12")) ~ 'Growing Season 2024',
       (date >= as.POSIXct("2024-09-13")) ~ 'Fall Senescence 2024',
       TRUE ~ NA_character_
     )
   )
+
+
+#splits season names into name and year cols
+df_avg_23_24 <- df_avg_23_24 %>%
+  mutate(
+    season_name = str_extract(season, "^[^0-9]+"), # Extract the season name
+    year = str_extract(season, "\\d{4}")          # Extract the 4-digit year
+  )
+
+
+#splits season names into name and year cols
+df_23_24 <- df_23_24 %>%
+  mutate(
+    season_name = str_extract(season, "^[^0-9]+"), # Extract the season name
+    year = str_extract(season, "\\d{4}")          # Extract the 4-digit year
+  )
+
 
 ```
 
@@ -663,10 +682,12 @@ Full
 
 # Units start as Micromoles of CO2/(m^2s), converted to g C/m^2
 
+df_cumsum$day <- as.data.frame(c(1:365))
+
 
 # Creates column in dataframe that is in the correct units, without NAs
-df_avg_2024 <- df_avg_2024 %>%
-  subset(format(day, "%Y") == "2024") %>%
+df_avg_23_24 <- df_avg_23_24 %>%
+  subset(format(year == "2024")) %>%
   mutate(day_as_POSIXct = as.POSIXct(day)) %>%
   mutate(DOY = as.numeric(format(day_as_POSIXct, "%j"))) %>%
   subset(select = -c(day_as_POSIXct)) %>%
@@ -823,11 +844,11 @@ ggplot(seasonal_integrals_2024, aes(x = season, y = integral_value)) +
 
 seasonal_integrals_full <- seasonal_integrals(df_23_24)
 
-seasonal_integrals_full$season <- factor(seasonal_integrals_full$season, levels = c("Fall Senescence 2022", "Winter 2022/2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023/2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"))
+seasonal_integrals_full$season <- factor(seasonal_integrals_full$season, levels = c("Fall Senescence 2022", "Winter 2022", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"))
 
 #Filter to remove incomplete fall seasons
 filtered_data <- seasonal_integrals_full %>%
-  filter(season %in% c("Winter 2022/2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023/2024", "Snow Melt 2024", "Growing Season 2024"))
+  filter(season %in% c("Winter 2022", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023", "Snow Melt 2024", "Growing Season 2024"))
          
          
 ggplot(filtered_data, aes(x = season, y = integral_value)) +
@@ -977,11 +998,11 @@ ggplot(seasonal_integrals_2023, aes(x = season, y = integral_value)) +
 
 seasonal_integrals_full <- seasonal_integrals(df_23_24)
 
-seasonal_integrals_full$season <- factor(seasonal_integrals_full$season, levels = c("Fall Senescence 2022", "Winter 2022/2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023/2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"))
+seasonal_integrals_full$season <- factor(seasonal_integrals_full$season, levels = c("Fall Senescence 2022", "Winter 2022", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"))
 
 #Filter to remove incomplete fall seasons
 filtered_data_ch4 <- seasonal_integrals_full %>%
-  filter(season %in% c("Winter 2022/2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023/2024", "Snow Melt 2024", "Growing Season 2024"))
+  filter(season %in% c("Winter 2022", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023", "Snow Melt 2024", "Growing Season 2024"))
          
          
 ggplot(filtered_data_ch4, aes(x = season, y = integral_value)) +
@@ -1003,6 +1024,8 @@ ggplot(filtered_data_ch4, aes(x = season, y = integral_value)) +
 # Season Average Table
 ```{r}
 
+
+#Averages over each season within each year, and includes no. of days
 df_avg_biomet <- df_23_24 %>%
   group_by(season) %>%
   summarize(
@@ -1011,16 +1034,16 @@ df_avg_biomet <- df_23_24 %>%
     tsoil5 = round(mean(TS_2_05_1, na.rm = TRUE), 2),
     swc = round(mean(SWC_1_1_1, na.rm = TRUE), 2)
     ) %>%
-    arrange(factor(season, levels = c("Fall Senescence 2022", "Winter 2022/2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023/2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024")))
+    arrange(factor(season, levels = c("Fall Senescence 2022", "Winter 2022", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024")))
 
 
 
 
 season_counts <- 
   df_avg_23_24 %>%
-  filter(season %in% c("Fall Senescence 2022", "Winter 2022/2023", 
+  filter(season %in% c("Fall Senescence 2022", "Winter 2022", 
                        "Snow Melt 2023", "Growing Season 2023", 
-                       "Fall Senescence 2023", "Winter 2023/2024", 
+                       "Fall Senescence 2023", "Winter 2023", 
                        "Snow Melt 2024", "Growing Season 2024", 
                        "Fall Senescence 2024")) %>%
   count(season)
@@ -1031,7 +1054,8 @@ df_avg_biomet <- right_join(df_avg_biomet, season_counts, by = "season")
 
 
 gt(df_avg_biomet,
-   rowname_col = "season") %>% 
+   rowname_col = "season",
+   groupname_col = "year") %>% 
   tab_header(title = "Seasonal Averages",
              subtitle = "Sept. 15th, 2022 to Sept 15th, 2024") %>%
   cols_label(
@@ -1042,7 +1066,7 @@ gt(df_avg_biomet,
     n = md("Length<br><span style='font-size:10pt'>(days)</span>")
   )%>%
   cols_width(
-    stub() ~ px(160)
+    stub() ~ px(200)
   )%>%
   tab_style(
     style = cell_text(align = "center"),
@@ -1051,7 +1075,48 @@ gt(df_avg_biomet,
       cells_column_labels() # Center all column labels
     )
   )
-  
+
+
+
+
+## Table of average values with standard error, averaged over seasons across both years
+df_std_error <- df_23_24 %>%
+  group_by(season_name) %>%
+  summarize(
+    nee = round(mean(FC, na.rm = TRUE), 2),
+    tair = round(mean(TA, na.rm = TRUE), 2),
+    tsoil5 = round(mean(TS_2_05_1, na.rm = TRUE), 2),
+    nee.se = round(std.error(FC, na.rm = TRUE), 2),
+    tair.se = round(std.error(TA, na.rm = TRUE), 2),
+    tsoil5.se = round(std.error(TS_2_05_1, na.rm = TRUE), 2)
+    ) %>%
+  mutate(
+    nee_with_se = paste0(nee, " ± ", nee.se),  # Combine value and SE
+    tair_with_se = paste0(tair, " ± ", tair.se),
+    tsoil5_with_se = paste0(tsoil5, " ± ", tsoil5.se)
+  ) %>%
+  select(season_name, nee_with_se, tair_with_se, tsoil5_with_se)
+
+
+
+gt(df_std_error, rowname_col = "season_name") %>% 
+  tab_header(title = "Seasonal Averages",
+             subtitle = "Sept. 15th, 2022 to Sept 15th, 2024") %>%
+  cols_label(
+    tair_with_se = md("Air Temp<br><span style='font-size:10pt'>(&deg;C)</span>"),
+    tsoil5_with_se = md("5cm Soil Temp<br><span style='font-size:10pt'>(&deg;C)</span>"),
+    nee_with_se = md("NEE<br><span style='font-size:10pt'>(&micro;molCO<sup>2</sup>m<sup>-2</sup>s<sup>-1</sup>)</span>")
+  )%>%
+  # cols_width(
+  #   stub() ~ px(200)
+  # )%>%
+  tab_style(
+    style = cell_text(align = "center"),
+    locations = list(
+      cells_body(),    # Center all data cells
+      cells_column_labels() # Center all column labels
+    )
+  )
 
 ```
 
@@ -1119,6 +1184,8 @@ colnames(df_soiltemp) = c("Time", "10", "0", "20", "30", "40", "50", "60", "70",
 
 # Uses linear interpolation to fill NAs in data to create smooth plot
 for (col in c("10", "0", "20", "30", "40", "50", "60", "70", "80", "90", "100")) {
+  df_soiltemp[[col]] <- na.locf(df_soiltemp[[col]], fromLast = TRUE) # Fill leading NAs
+  df_soiltemp[[col]] <- na.locf(df_soiltemp[[col]]) # Fill trailing NAs
   df_soiltemp[[col]] <- na.approx(df_soiltemp[[col]])
 }
 
@@ -1171,9 +1238,16 @@ soiltemp <- ggplot()+
   scale_y_continuous(name = "Depth (cm)",
     # trans = "reverse",  # Reverses the direction of the axis
     breaks = seq(0, -100, by = -10),  # Sets breaks for each 10 cm
-    labels = seq(0, 100, by = 10) )
+    labels = seq(0, 100, by = 10),
+    expand = c(0,0)
+    )+
+  scale_x_datetime(
+    expand = c(0,0),
+    name = ""
+                   )
 #+
-  scale_x_datetime(limits = as.POSIXct(c('2024-03-05', '2024-05-30')))
+  geom_vline(xintercept = as.POSIXct("2024-05-01"), color = "black", linewidth = 1.5)+
+  geom_vline(xintercept = as.POSIXct("2023-05-01"), color = "black", linewidth = 1.5)
 
 soiltemp
 
