@@ -12,6 +12,39 @@ df$dou
 
 library(bigleaf)
 
+#different averaging methods
+library(dplyr)
+df$month = format(df$date,'%m')
+df$doy   = format(df$date,'%j')
+df$year  = format(df$date,'%y')
+
+df$nee = df$FC_PI_F*60*30/1000000*12
+
+#sums of half hourly
+hh = df %>%
+  group_by(year,month) %>%
+  summarise(nee.h = sum(nee))
+
+#daily means by month
+dm = df %>%
+  group_by(year,month,doy) %>%
+  summarise(nee.av = mean(nee),
+            one = 1)
+
+dm$nee.daily = dm$nee.av*48
+
+dmo = dm %>%
+  group_by(year,month) %>%
+  summarise(nee.ave = mean(nee.daily),
+            days = sum(one),
+            nee.d = nee.ave*days)
+
+plot(dmo$nee.d,hh$nee.h)
+
+fin = merge(dmo,hh,by = c('month','year'),all = T)
+summary(lm())
+
+
 
 av = timeAverage(mydata = df,avg.time = '1 day',data.thresh = 50,statistic = 'mean')
 gs = subset(av,av$TA > 5 & av$PPFD_IN > 0)
