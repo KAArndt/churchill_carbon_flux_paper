@@ -33,15 +33,31 @@ dm = df %>%
 
 dm$nee.daily = dm$nee.av*48
 
+#monthly
 dmo = dm %>%
   group_by(year,month) %>%
   summarise(nee.ave = mean(nee.daily),
             days = sum(one),
-            nee.d = nee.ave*days)
+            nee.d = nee.ave*days,
+            nee.daily.summed = sum(nee.daily))
+
+#monthly means
+mo = df %>%
+  group_by(year,month) %>%
+  summarise(nee.av = mean(nee)*48)
+
+mo$days = dmo$days
+mo$nee.m = mo$days*mo$nee.av
+
 
 plot(dmo$nee.d,hh$nee.h)
+plot(dmo$nee.d,mo$nee.m)
+
+
 
 fin = merge(dmo,hh,by = c('month','year'),all = T)
+fin = merge(fin,mo,by = c('month','year'),all = T)
+
 summary(lm())
 
 
