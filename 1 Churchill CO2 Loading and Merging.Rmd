@@ -183,6 +183,11 @@ df1 <- select(df1, !all_of(names(df1)[grep("G_F_MDS", names(df1))]))
 
 Change soil temp names for consistency
 ```{r}
+names(df3)[names(df3) == "TS_1_1_1"] <- "TS_3_1_1"
+names(df3)[names(df3) == "TS_2_1_1"] <- "TS_4_1_1"
+names(df3)[names(df3) == "TS_2_2_1"] <- "TS_4_2_1"
+
+
 names(df3)[names(df3) == "TS_3_1_1"] <- "TS_2_0_1"
 names(df3)[names(df3) == "TS_3_2_1"] <- "TS_2_05_1"
 names(df3)[names(df3) == "TS_3_3_1"] <- "TS_2_1_1"
