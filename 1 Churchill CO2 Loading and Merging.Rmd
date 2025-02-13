@@ -51,7 +51,7 @@ Gapfill 2024 using 2023 data, but don't re-gapfill 2023
 
 df23 <- fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202208062330_202312301700.csv', na.strings="-9999")
 
-df24 <- fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202312301700_202409301800.csv', na.strings="-9999")
+df24 <- fread('C:/Users/dtrangmoe/Documents/Churchill/CA-CF3_HH_202312301700_202412311700.csv', na.strings="-9999")
 
 df3 <- rbind(df23, df24)
 
@@ -183,6 +183,11 @@ df1 <- select(df1, !all_of(names(df1)[grep("G_F_MDS", names(df1))]))
 
 Change soil temp names for consistency
 ```{r}
+names(df3)[names(df3) == "TS_1_1_1"] <- "TS_3_1_1"
+names(df3)[names(df3) == "TS_2_1_1"] <- "TS_4_1_1"
+names(df3)[names(df3) == "TS_2_2_1"] <- "TS_4_2_1"
+
+
 names(df3)[names(df3) == "TS_3_1_1"] <- "TS_2_0_1"
 names(df3)[names(df3) == "TS_3_2_1"] <- "TS_2_05_1"
 names(df3)[names(df3) == "TS_3_3_1"] <- "TS_2_1_1"
@@ -287,30 +292,31 @@ rm(df_avg_night)
 
 
 
-# #for viewing data coverage
-# 
-# 
-# plot(df_avg$FC_night)
-# 
-# year_df <- function(df, year) {
-#   df %>%
-#     filter(format(date, "%Y") == as.character(year)) %>%
-#     mutate(DOY = yday(date))
-# }
-# 
-# df_avg_2023 <- year_df(df_avg, 2023)
-# 
-# summary(df_avg_2023)
-# 
-# plot(df_avg_2023$FC_night)
-# 
-# plot(df_avg_2023$TS_1_05_1, df_avg_2023$FC_night)
+#for viewing data coverage
 
 
-# plot(df_avg$date, df_avg$FC_F)
-# plot(df_avg$date, df_avg$GPP_F)
-# plot(df_avg$date, df_avg$RECO)
-# plot(df_avg$date, df_avg$FC_night_F)
+plot(df_avg$FC_night)
+
+year_df <- function(df, year) {
+  df %>%
+    filter(format(date, "%Y") == as.character(year)) %>%
+    mutate(DOY = yday(date))
+}
+
+df_avg_2023 <- year_df(df_avg, 2024)
+
+summary(df_avg_2023)
+
+plot(df_avg_2023$FC_night)
+
+plot(df_avg_2023$TS_1_05_1, df_avg_2023$FC_night)
+
+
+plot(df_avg$date, df_avg$FC_F)
+plot(df_avg$date, df_avg$GPP_F)
+plot(df_avg$date, df_avg$RECO)
+
+plot(df_avg$date, df_avg$FC_night_F)
 
 
 ```
