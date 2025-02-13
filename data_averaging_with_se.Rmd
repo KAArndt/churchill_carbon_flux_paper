@@ -13,7 +13,7 @@ library(data.table)
 library(ggplot2)
 library(lubridate)
 library(tidyverse)
-library(RColorBrewer)
+library(plotrix) # standard error function
 
 ```
 
