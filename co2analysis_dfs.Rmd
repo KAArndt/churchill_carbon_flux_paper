@@ -5,7 +5,9 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-# Load Data from cf1_cf3_merge
+# Load Data 
+
+from cf1_cf3_merge
 
 ```{r}
 
@@ -38,7 +40,28 @@ df_23_24 <- subset(df, ((df$TIMESTAMP > as.POSIXct("2022-10-16 00:00")) & (df$TI
 
 ```
 
+
+
+
+
 # Definitions of seasons
+
+
+Last days:
+
+End of fall 1: 10-15-2022; DOY 288
+
+end of winter 1, 05-04-23
+end of snowmelt 1, 06-11-23
+end of growing season 1, 09-05-23
+end of Fall Senescence 2, 10-21-23
+
+End of winter 2: 05-14-2024; DOY 135
+End of snowmelt 2: 06-17-2024; DOY 169
+End of growing season 2: 09-12-2024; DOY 256
+End of Fall 3: 10-19-24; DOY 293
+
+
 ```{r}
 
 df_avg_23_24 <- df_avg_23_24 %>%
