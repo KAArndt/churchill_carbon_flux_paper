@@ -49,6 +49,8 @@ df = fread('C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_CF1_CF3
 df_avg = fread('C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_Avg_CF1_CF3_HH_24.csv',na.strings = c('-9999','NA','NaN','NAN','-7999'))
 
 
+df = fread(input = "AMF_CA-CF3_BASE_HH_1-5.csv",na.strings = c("-9999"))
+df$ts = as.POSIXct(x = as.character(df$TIMESTAMP_END),format = "%Y%m%d%H%M")
 ```
 
 #### Create yearly dataframes, timestamp
