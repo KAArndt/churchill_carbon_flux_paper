@@ -45,7 +45,7 @@ library(gt)
 
 df = fread('C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_CF1_CF3_HH_24.csv',na.strings = c('-9999','NA','NaN','NAN','-7999'))
 
-#needs continuous day variable
+
 df_avg = fread('C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_Avg_CF1_CF3_HH_24.csv',na.strings = c('-9999','NA','NaN','NAN','-7999'))
 
 

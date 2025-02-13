@@ -1,0 +1,153 @@
+---
+title: "Churchill Annual Budget Plots"
+author: "Dani Trangmoe"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r, include=FALSE}
+rm(list = ls())
+Sys.setenv(TZ = "UTC")
+
+library(data.table)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(RColorBrewer)
+
+```
+
+# Load data
+
+```{r}
+
+df_y1 = fread('./year1_HH.csv')
+df_y2 = fread('./year2_HH.csv')
+
+```
+
+
+#### Net C Budget
+
+Plot 2 in Ameriflux poster
+
+_no_NAs is used for other years of data where NAs are present in gapfilled data
+
+Y1
+```{r}
+
+# Units start as micromoles of CO2/(m^2s), converted to Grams of C/m^2
+
+# Net CO2 Flux
+df_y1 <- df_y1 %>%
+  mutate(FC_F_no_NAs = ifelse(is.na(FC_F), 0, FC_F * 60 * (1/1000000) * 12 * 30))
+
+
+# Units start as nanomoles of CH4/(m^2s), converted to Grams of C/m^2
+
+#Net CH4 Flux
+df_y1 <- df_y1 %>%
+  mutate(FCH4_F_no_NAs = ifelse(is.na(FCH4_F), 0, FCH4_F*60*(1/1000000000)*12*30))
+
+
+## Summation of data
+net_CO2 <- sum(df_y1$FC_F_no_NAs)
+net_CH4 <- sum(df_y1$FCH4_F_no_NAs) 
+
+
+## Marco uses g CH4 not g C, gets a value of ~11 for CH4 in 2023
+
+# Used IPCC Sixth Assessment Report (AR6) global warming potentials, 100 year time period - could use paper gwp* or delta equation for future analysis
+
+net_CH4_CO2e <- net_CH4*27.2
+sum = net_CO2+net_CH4
+
+
+#Dataframe created to generate bar graph
+net_wp <- data.frame(
+  Category = c("Total", "CO2", "CH4"),
+  Value = c(round(sum, 2), round(net_CO2, 2), round(net_CH4, 2) 
+))
+
+#Plot here
+
+year1 <- ggplot(net_wp, aes(y = Category, x = Value)) +
+  theme_bw()+
+  theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), 
+  axis.title = element_text(size = 16),title = element_text(size = 16), legend.position = 'none')+
+  geom_bar(stat = "identity", position = "dodge", fill = "turquoise3") +
+  geom_vline(xintercept=0, colour = "black")+
+  labs(
+    y = "",
+    x = expression("Net Carbon Flux (g C"~m^-2~y^-1*")"),
+    title = "Year 1") +
+  geom_label(aes(label = Value), hjust = ifelse(net_wp$Value >= 0, -0.3, 1.1), colour = "black", fill ="white", size = 5)+
+  scale_x_continuous(limits=c(-21, 12))
+year1
+
+# png(filename = './year1.png',width = 6.25,height = 4,units = 'in',res = 2000)
+# year1
+# dev.off()
+
+
+```
+
+
+Y2
+```{r}
+
+# Units start as micromoles of CO2/(m^2s), converted to Grams of C/m^2
+
+# Net CO2 Flux
+df_y2 <- df_y2 %>%
+  mutate(FC_F_no_NAs = ifelse(is.na(FC_F), 0, FC_F * 60 * (1/1000000) * 12 * 30))
+
+
+# Units start as nanomoles of CH4/(m^2s), converted to Grams of C/m^2
+
+#Net CH4 Flux
+df_y2 <- df_y2 %>%
+  mutate(FCH4_F_no_NAs = ifelse(is.na(FCH4_F), 0, FCH4_F*60*(1/1000000000)*12*30))
+
+
+## Summation of data
+net_CO2 <- sum(df_y2$FC_F_no_NAs)
+net_CH4 <- sum(df_y2$FCH4_F_no_NAs) 
+
+
+## Marco uses g CH4 not g C, gets a value of ~11 for CH4 in 2023
+
+# Used IPCC Sixth Assessment Report (AR6) global warming potentials, 100 year time period - could use paper gwp* or delta equation for future analysis
+
+net_CH4_CO2e <- net_CH4*27.2
+sum = net_CO2+net_CH4
+
+
+#Dataframe created to generate bar graph
+net_wp <- data.frame(
+  Category = c("Total", "CO2", "CH4"),
+  Value = c( round(sum, 2), round(net_CO2, 2), round(net_CH4, 2) 
+))
+
+#Plot here
+
+year2 <- ggplot(net_wp, aes(y = Category, x = Value)) +
+  theme_bw()+
+  theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), 
+  axis.title = element_text(size = 16),title = element_text(size = 16), legend.position = 'none')+
+  geom_bar(stat = "identity", position = "dodge", fill = "turquoise3") +
+  geom_vline(xintercept=0, colour = "black")+
+  labs(
+    y = c(expression (""), expression("CO"[2]), expression("CH"[4])),
+    x = expression("Net Carbon Flux (g C"~m^-2~y^-1*")"),
+    title = "Year 2") +
+  geom_label(aes(label = Value), hjust = ifelse(net_wp$Value >= 0, -0.3, 1.1), colour = "black", fill ="white", size = 5)+
+  scale_x_continuous(limits=c(-36, 12))
+year2
+
+# pngfilename = './year2.png',width = 6.25,height = 4,units = 'in',res = 2000)
+# year2
+# dev.off()
+
+
+```

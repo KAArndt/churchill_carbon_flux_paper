@@ -1,0 +1,155 @@
+---
+title: "Two Year Data Loading"
+author: "Dani Trangmoe"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Load Data from cf1_cf3_merge
+
+```{r}
+
+df = fread('C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_CF1_CF3_HH_24.csv',na.strings = c('-9999','NA','NaN','NAN','-7999'))
+
+
+df_avg = fread('C:/Users/dtrangmoe/Documents/Churchill/Data/Churchill_Merged_Avg_CF1_CF3_HH_24.csv',na.strings = c('-9999','NA','NaN','NAN','-7999'))
+
+#Creates data frames of each year containing the daily averages of each value- useful for focusing on one year at a time
+
+df_avg$day <- as.POSIXct(df_avg$date, format = "%Y-%m-%d")
+df$day <- as.POSIXct(df$date, format = "%Y-%m-%d")
+
+df$DOY <- yday(df$TIMESTAMP)
+df_avg$DOY <- yday(df_avg$TIMESTAMP)
+
+
+```
+
+# Select only time period we're looking at
+
+```{r}
+
+# #Both (both years of data, beginning at the beginning of fall 2022 and ending at the end of fall 2024. makes two full seasonal cycles of data)
+
+df_avg_23_24 <- subset(df_avg, ((df_avg$TIMESTAMP > as.POSIXct("2022-10-16 00:00")) & (df_avg$TIMESTAMP < as.POSIXct("2024-10-19 00:00"))))
+
+df_23_24 <- subset(df, ((df$TIMESTAMP > as.POSIXct("2022-10-16 00:00")) & (df$TIMESTAMP < as.POSIXct("2024-10-19 00:00"))))
+
+
+```
+
+# Definitions of seasons
+```{r}
+
+df_avg_23_24 <- df_avg_23_24 %>%
+  mutate(
+      season = case_when(
+      (date <= as.POSIXct("2022-10-15")) ~ 'Fall Senescence 2022',
+      
+      (date >= as.POSIXct("2022-10-16") & date <= as.POSIXct("2023-05-04")) ~ 'Winter 2023',
+      
+      (date >= as.POSIXct("2023-05-05") & date <= as.POSIXct("2023-06-11")) ~ 'Snow Melt 2023',
+      
+      (date >= as.POSIXct("2023-06-12") & date <= as.POSIXct("2023-09-05")) ~ 'Growing Season 2023',
+      
+      (date >= as.POSIXct("2023-09-06") & date <= as.POSIXct("2023-10-21")) ~ 'Fall Senescence 2023',
+      
+      (date >= as.POSIXct("2023-10-22") & date <= as.POSIXct("2024-05-14")) ~ 'Winter 2024',
+      
+      (date >= as.POSIXct("2024-05-15") & date <= as.POSIXct("2024-06-17")) ~ 'Snow Melt 2024',
+      
+      (date >= as.POSIXct("2024-06-18") & date <= as.POSIXct("2024-09-12")) ~ 'Growing Season 2024',
+      
+      (date >= as.POSIXct("2024-09-13") & date <= as.POSIXct("2024-10-19")) ~ 'Fall Senescence 2024',
+      
+      (date >= as.POSIXct("2023-10-20")) ~ 'Winter 2025',
+      TRUE ~ NA_character_
+    )
+  )
+
+
+# Definition of seasons in the half-hourly dataframe 
+
+df_23_24 <- df_23_24 %>%
+  mutate(
+    season = case_when(
+      (date <= as.POSIXct("2022-10-15")) ~ 'Fall Senescence 2022',
+      
+      (date >= as.POSIXct("2022-10-16") & date <= as.POSIXct("2023-05-04")) ~ 'Winter 2023',
+      
+      (date >= as.POSIXct("2023-05-05") & date <= as.POSIXct("2023-06-11")) ~ 'Snow Melt 2023',
+      
+      (date >= as.POSIXct("2023-06-12") & date <= as.POSIXct("2023-09-05")) ~ 'Growing Season 2023',
+      
+      (date >= as.POSIXct("2023-09-06") & date <= as.POSIXct("2023-10-21")) ~ 'Fall Senescence 2023',
+      
+      (date >= as.POSIXct("2023-10-22") & date <= as.POSIXct("2024-05-14")) ~ 'Winter 2024',
+      
+      (date >= as.POSIXct("2024-05-15") & date <= as.POSIXct("2024-06-17")) ~ 'Snow Melt 2024',
+      
+      (date >= as.POSIXct("2024-06-18") & date <= as.POSIXct("2024-09-12")) ~ 'Growing Season 2024',
+      
+      (date >= as.POSIXct("2024-09-13") & date <= as.POSIXct("2024-10-19")) ~ 'Fall Senescence 2024',
+      
+      (date >= as.POSIXct("2023-10-20")) ~ 'Winter 2025',
+      TRUE ~ NA_character_
+    )
+  )
+
+
+#splits season names into name and year cols
+df_avg_23_24 <- df_avg_23_24 %>%
+  mutate(
+    season_name = str_extract(season, "^[^0-9]+"), # Extract the season name
+    year = str_extract(season, "\\d{4}")          # Extract the 4-digit year
+  )
+
+
+#splits season names into name and year cols
+df_23_24 <- df_23_24 %>%
+  mutate(
+    season_name = str_extract(season, "^[^0-9]+"), # Extract the season name
+    year = str_extract(season, "\\d{4}")          # Extract the 4-digit year
+  )
+```
+
+
+#Breaks dataframes up into two year-long dataframes, each containing a full seasonal cycle 
+```{r}
+## For two year budget, broken up at end of fall y1
+
+df_y1 <- subset(df_23_24, ((df_23_24$TIMESTAMP > as.POSIXct("2022-10-16 00:00")) & (df_23_24$TIMESTAMP < as.POSIXct("2023-10-20 00:00"))))
+
+df_avg_y1 <- subset(df_avg_23_24, ((df_avg_23_24$date > as.POSIXct("2022-10-16")) & (df_avg_23_24$date < as.POSIXct("2023-10-20"))))
+
+
+
+df_y2 <- subset(df_23_24, ((df_23_24$TIMESTAMP >= as.POSIXct("2023-10-20 00:00")) & (df_23_24$TIMESTAMP < as.POSIXct("2024-10-19 00:00"))))
+
+df_avg_y2 <- subset(df_avg_23_24, ((df_avg_23_24$date >= as.POSIXct("2023-10-20")) & (df_avg_23_24$date < as.POSIXct("2024-10-19"))))
+```
+
+
+
+# Save off each dataframe
+
+```{r}
+
+#FOR ALL DATAFRAMES: Units of CO2 flux are micromoles of CO2/(m^2s), units of CH4 flux are nanomoles of CH4/(m^2s)
+
+
+# Both years of data
+write.csv(x = df_23_24,file = './bothyears_HH.csv',row.names = F,quote = F)
+write.csv(x = df_avg_23_24,file = './bothyears_daily_avg.csv',row.names = F,quote = F)
+
+# Year 1
+write.csv(x = df_y1,file = './year1_HH.csv',row.names = F,quote = F)
+write.csv(x = df_avg_y1,file = './year1_daily_avg.csv',row.names = F,quote = F)
+
+# Year 2
+write.csv(x = df_y2,file = './year2_HH.csv',row.names = F,quote = F)
+write.csv(x = df_avg_y2,file = './year2_daily_avg.csv',row.names = F,quote = F)
+
+```
+
+
