@@ -23,6 +23,7 @@ library(tidyverse)
 
 df_avg_y1 <- fread('./year1_daily_avg.csv')
 df_avg_y2 <- fread('./year2_daily_avg.csv')
+df_avg_23_24 <- fread('./bothyears_daily_avg.csv')
 
 #Creates dataframe with both years of data
 df_merge <- merge(df_avg_y1, df_avg_y2, by = "DOY", suffixes = c(".y1", ".y2"))
@@ -35,6 +36,27 @@ Plots 6 and 7 for Ameriflux poster
 
 ### Create Exp. Model
 ```{r}
+
+###Both years
+
+#co2
+exp_model <- nls(FC_night ~ a * exp(b * TS_1_05_1), data = df_avg_23_24, start = list(a = 1, b = 0.1))
+
+# Generate predicted values
+df_avg_23_24$predicted <- predict(exp_model, newdata = df_avg_23_24)
+
+
+#ch4
+exp_model_ch4 <- nls(FCH4 ~ a * exp(b * TS_1_05_1), data = df_avg_23_24, start = list(a = 1, b = 0.1))
+
+# Generate predicted values
+df_merge$predicted_ch4 <- predict(exp_model_ch4, newdata = df_avg_23_24)
+
+
+
+
+
+
 
 
 ### Year 1
@@ -73,6 +95,33 @@ df_merge$predicted_ch4.y2 <- predict(exp_model_ch4.y2, newdata = df_merge)
 
 ### Plots
 ```{r}
+
+#Both Years
+
+co2model <- ggplot(data=df_avg_23_24)+
+  theme_bw()+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  geom_point(aes(x=TS_1_05_1, y=FC_night, col = DOY, shape = factor(year)))+
+  geom_line(aes(x = TS_1_05_1, y = predicted))+
+  scale_color_gradient(low = "navy", high = "salmon")+
+  labs(
+    x = expression("5cm Soil Temperature ("*degree*"C)"),
+    y = expression("Half-hourly nighttime CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
+    title = expression("Nighttime CO"[2] * " Flux vs. Soil Temperature")
+  )+
+  scale_shape_manual(name = "Year", values = c(16, 17))+
+  scale_x_continuous(limits=c(-11,15))+
+  scale_y_continuous(limits=c(-0.5,2.5))+
+theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
+  axis.title = element_text(size = 14))
+
+co2model
+
+,legend.position = 'none'
+
+
+
 
 #Plots flux variables vs. 5cm soil temp to visualize temperature/co2 flux relationship
 
