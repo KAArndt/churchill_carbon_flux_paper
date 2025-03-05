@@ -126,16 +126,35 @@ first_of_month <- data.frame(
 
 df_avg_winter$year <- as.factor(df_avg_winter$year)
 
-#df_avg_winter$airdiff <- df_avg_winter$TA-df_avg_winter$TS_2_05_1
+df_avg_winter$airdiff <- df_avg_winter$TA-df_avg_winter$TS_2_05_1
 
 #needs axis labels for dashed-dotted line
 winterts <- ggplot(data = df_avg_winter)+
   theme_bw()+
-  geom_line(aes(x = DOW, y = TS_2_05_1, color = year))+
-  geom_line(aes(x = DOW, y = TA, color = year), linetype = "dashed")+
+  geom_line(aes(x = DOW, y = TS_2_05_1, color = year, linetype = "Soil T"))+
+  geom_line(aes(x = DOW, y = TA, color = year, linetype = "Air T"))+
   scale_x_continuous(limits = c(0, 200),
     breaks = first_of_month$DOW,
     labels = first_of_month$Label)+ 
+  scale_color_manual(name = " ",
+            values = c("2024" = "salmon",
+                      "2023" = "turquoise3"),
+            breaks = c("2024", "2023"))+
+  scale_linetype_manual(name = " ",
+                        values = c("Soil T" = "solid",
+                          "Air T"="twodash"))+
+  labs(
+    x = expression(" "),
+    y = expression("Temp ("*degree*"C)")
+  )
+
+# Ambient temp is dominant trend here, not interesting
+ggplot(data = df_avg_winter)+
+  theme_bw()+
+  geom_line(aes(x = DOW, y = airdiff, color = year))+
+  scale_x_continuous(limits = c(0, 200),
+    breaks = first_of_month$DOW,
+    labels = first_of_month$Label)+
   scale_color_manual(name = " ",
             values = c("2024" = "salmon",
                       "2023" = "turquoise3"),
@@ -145,28 +164,13 @@ winterts <- ggplot(data = df_avg_winter)+
     y = expression("Temp ("*degree*"C)")
   )
 
-# # Ambient temp is dominant trend here, not interesting
-# ggplot(data = df_avg_winter)+
-#   theme_bw()+
-#   geom_line(aes(x = DOW, y = airdiff, color = year))+
-#   scale_x_continuous(limits = c(0, 200),
-#     breaks = first_of_month$DOW,
-#     labels = first_of_month$Label)+ 
-#   scale_color_manual(name = " ",
-#             values = c("2024" = "salmon",
-#                       "2023" = "turquoise3"),
-#             breaks = c("2024", "2023"))+
-#   labs(
-#     x = expression(" "),
-#     y = expression("Temp ("*degree*"C)")
-#   )
-
 wintersd <- ggplot(data = df_avg_winter)+
   theme_bw()+
   geom_line(aes(x = DOW, y = D_SNOW, color = year))+
   scale_x_continuous(limits = c(0, 200),
     breaks = first_of_month$DOW,
-    labels = first_of_month$Label)+     scale_color_manual(name = " ",
+    labels = first_of_month$Label)+     
+  scale_color_manual(name = " ",
             values = c("2024" = "salmon", 
                       "2023" = "turquoise3"),
             breaks = c("2024", "2023"))+ 
