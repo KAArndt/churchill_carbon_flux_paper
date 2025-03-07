@@ -116,12 +116,13 @@ budget <- ggplot(net_wp, aes(y = Category, x = Value, fill = Year)) +
     x = expression("Net Carbon Flux (g C"~m^-2~y^-1*")"),
     title = "Net Carbon Budgets",
     fill = "Year") +
-  #geom_label(aes(label = Value), hjust = ifelse(net_wp$Value >= 0, -0.3, 1.1), colour = "black", fill ="white", size = 5)+
+  geom_label(aes(label = Value), vjust = ifelse(net_wp$Year == 2, -1, 2), hjust = ifelse(net_wp$Value >= 0, -0.2, 1.1), colour = "black", fill ="white", size = 5)+ ## Need to fix these!
   scale_x_continuous(limits=c(-40, 15))
-
-png(filename = './budget.png',width = 6.25,height = 4,units = 'in',res = 2000)
 budget
-dev.off()
+
+# png(filename = './budget.png',width = 6.25,height = 4,units = 'in',res = 2000)
+# budget
+# dev.off()
 
 
 ```
