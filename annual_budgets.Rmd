@@ -103,26 +103,31 @@ Plot here
 
 #Plot here
 
-budget <- ggplot(net_wp, aes(y = Category, x = Value, fill = Year)) +
+budget <- ggplot(net_wp, aes(y = Category, x = Value, fill = factor(Year, levels = c("2", "1")))) +
   theme_bw()+
   theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), 
-  axis.title = element_text(size = 16),title = element_text(size = 16), legend.position = 'none')+
+  axis.title = element_text(size = 16),title = element_text(size = 16), legend.text = element_text(size = 12))+
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(name = " ",
-                    values = c("1" = "turquoise", "2" = "salmon"))+
+  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon"),
+                    labels = c("1" = "Year 1", "2" = "Year 2"),  
+                    guide = guide_legend(reverse = TRUE))+
   geom_vline(xintercept=0, colour = "black")+
   labs(
     y = "",
-    x = expression("Net Carbon Flux (g C"~m^-2~y^-1*")"),
-    title = "Net Carbon Budgets",
-    fill = "Year") +
-  geom_label(aes(label = Value), vjust = ifelse(net_wp$Year == 2, -1, 2), hjust = ifelse(net_wp$Value >= 0, -0.2, 1.1), colour = "black", fill ="white", size = 5)+ ## Need to fix these!
-  scale_x_continuous(limits=c(-40, 15))
+    x = expression("Net Carbon Flux (gC"~m^-2~y^-1*")"),
+    title = "Annual Carbon Budget",
+    fill = " ") +
+  geom_label(aes(label = paste0(Value, " gC")), vjust = ifelse(net_wp$Year == 1, -1, 2), hjust = ifelse(net_wp$Value >= 0, -0.2, 1.1), colour = "black", fill ="white", size = 5)+ ## Need to fix these!
+  scale_x_continuous(limits=c(-36, 13))+
+  scale_y_discrete(labels = c("Total" = "Total", 
+                              "CO2" = expression(CO[2]), 
+                              "CH4" = expression(CH[4])))
+
 budget
 
-# png(filename = './budget.png',width = 6.25,height = 4,units = 'in',res = 2000)
-# budget
-# dev.off()
+png(filename = './budget.png',width = 10.90,height = 6.72,units = 'in',res = 2000)
+budget
+dev.off()
 
 
 ```
