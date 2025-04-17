@@ -20,6 +20,7 @@ library(data.table)
 library(ggplot2)
 library(lubridate)
 library(tidyverse)
+library(gridExtra)
 ```
 
 
@@ -30,6 +31,7 @@ library(tidyverse)
 df_23_24 <- fread("./bothyears_HH.csv")
 
 ```
+
 
 ## NEE
 
@@ -57,41 +59,23 @@ seasonal_integrals_co2 <- function(df) {
 }
 
 
+
 # Full set
 
 seasonal_integrals_co2 <- seasonal_integrals_co2(df_23_24)
 
-seasonal_integrals_co2$season <- factor(seasonal_integrals_co2$season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"))
+seasonal_integrals_co2$season <- factor(seasonal_integrals_co2$season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"), ordered = TRUE)
 
 #Filter to remove incomplete fall seasons
-filtered_data <- seasonal_integrals_co2 %>%
+filtered_data_co2 <- seasonal_integrals_co2 %>%
   filter(season %in% c("Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"))
-         
-         
-co2seasons <- ggplot(filtered_data, aes(x = season, y = integral_value)) +
-  theme_bw()+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14),legend.position = 'none')+
-  geom_hline(yintercept=0, colour="black")+geom_hline(yintercept=0, colour="black")+
-  geom_bar(stat = "identity", position = "dodge", fill = "turquoise3") +
-  labs(
-    x = " ",
-    y = expression("Net CO"[2] * " Flux (g C m"^-2*")"),
-    title = expression("Net CO"[2] * " Flux by Season")
-  ) +
-  geom_label(aes(label = integral_value), vjust = ifelse(filtered_data$integral_value >= 0, -0.7, 1.5), colour = "black", fill ="white")+
-  scale_y_continuous(limits=c(-65, 23)) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
 
-co2seasons
 
-# png(filename = './co2seasons.png',width = 7.3,height = 4.1,units = 'in',res = 2000)
-# co2seasons
-# dev.off()
- 
+# Remove numeric year to group seasons
+filtered_data_co2$season_name <- gsub(" [0-9]{4}", "", filtered_data_co2$season)
 
-# Bar graph showing growing season vs. year round analysis
-# Change GPP to negative to show dynamics in budget
+#Add year factor
+filtered_data_co2['year'] <- c(2023,2024,2023,2024,2023,2024,2023,2024)
 
 
 
@@ -100,8 +84,6 @@ co2seasons
 
 
 ## Methane
-
-Plot 4 on Ameriflux Poster
 
 
 ```{r}
@@ -126,32 +108,148 @@ seasonal_integrals_ch4 <- function(df) {
 
 seasonal_integrals_ch4 <- seasonal_integrals_ch4(df_23_24)
 
-seasonal_integrals_ch4$season <- factor(seasonal_integrals_ch4$season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"))
+
+
+seasonal_integrals_ch4$season <- factor(seasonal_integrals_ch4$season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"), ordered = TRUE)
+
 
 #Filter to remove incomplete fall season
 filtered_data_ch4 <- seasonal_integrals_ch4 %>%
   filter(season %in% c("Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024"))
+
+
+# Remove numeric year to group seasons
+filtered_data_ch4$season_name <- gsub(" [0-9]{4}", "", filtered_data_ch4$season)
+
+
+#Add year factor
+filtered_data_ch4['year'] <- c(2023,2024,2023,2024,2023,2024,2023,2024)
+
+
+
+```
+
+## Grouping
+
+```{r}
+
+filtered_data_net <- left_join(filtered_data_co2, filtered_data_ch4, by = c('season','year', 'season_name'), suffix = c('.co2','.ch4'))
+
+#create net integral values
+filtered_data_net$integral_value.net <- filtered_data_net$integral_value.co2 + filtered_data_net$integral_value.ch4
+
+
+## Order correctly
+
+filtered_data_net$season_name <- factor(filtered_data_net$season_name, levels = c("Winter", "Snow Melt", "Growing Season", "Fall Senescence"), ordered = TRUE)
+
+
+
+```
+
+
+
+
+# Plot
+
+## NEE
+
+```{r}
          
-         
-ch4seasons <- ggplot(filtered_data_ch4, aes(x = season, y = integral_value)) +
+co2seasons <- ggplot(filtered_data_net, aes(x = season_name, y = integral_value.co2, fill = factor(year, levels = c("2023", "2024")))) +
+  theme_bw()+
+theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
+  axis.title = element_text(size = 14),legend.position = 'none')+
+  geom_hline(yintercept=0, colour="black")+geom_hline(yintercept=0, colour="black")+
+  geom_col(position = position_dodge(width = 0.9)) +
+  labs(
+    x = " ",
+    y = expression("Net CO"[2] * " Flux (g C m"^-2*")"),
+    title = expression("Net CO"[2] * " Flux by Season")
+  ) +
+  geom_label(aes(label = integral_value.co2), 
+             position = position_dodge(width = 0.9), vjust = ifelse(filtered_data_net$integral_value.co2 >= 0, -0.7, 1.5), colour = "black", fill ="white")+
+  scale_fill_manual(values = c("2023" = "turquoise", "2024" = "salmon"))+
+  scale_y_continuous(limits=c(-65, 23)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+co2seasons
+
+# png(filename = './co2seasons.png',width = 7.3,height = 4.1,units = 'in',res = 2000)
+# co2seasons
+# dev.off()
+```
+
+
+## Methane
+
+```{r}
+
+ch4seasons <- ggplot(filtered_data_net, aes(x = season_name, y = integral_value.ch4,  fill = factor(year, levels = c("2023", "2024")))) +
   theme_bw()+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
   axis.title = element_text(size = 14),legend.position = 'none')+
   geom_hline(yintercept=0, colour="black")+
-  geom_bar(stat = "identity", position = "dodge", fill = "turquoise3") +
+  geom_col(position = "dodge")+
+  scale_fill_manual(values = c("2023" = "turquoise", "2024" = "salmon"))+
   labs(
     x = "",
     y = expression("Net CH"[4] * " Flux (g C m"^-2*")"),
     title = expression("Net CH"[4] * " Flux by Season")
   ) +
-  geom_label(aes(label = integral_value), vjust = ifelse(filtered_data_ch4$integral_value >= 0, -0.7, 1.5), colour = "black", fill ="white")+
+  geom_label(aes(label = integral_value.ch4), vjust = ifelse(filtered_data_net$integral_value.ch4 >= 0, -0.7, 1.5), colour = "black", fill ="white")+
   scale_y_continuous(limits=c(0, 6.2), expand = c(0,0))+
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
 ch4seasons
 
 # png(filename = './ch4seasons.png',width = 7.3,height = 4.1,units = 'in',res = 2000)
 # ch4seasons
 # dev.off()
  
+```
+
+
+## Net Plot
+
+```{r}
+
+
+
+netseasons <- ggplot(filtered_data_net, aes(x = season_name, y = integral_value.net,  fill = factor(year, levels = c("2023", "2024")))) +
+  theme_bw()+
+theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
+  axis.title = element_text(size = 14),legend.position = 'none')+
+  geom_hline(yintercept=0, colour="black")+
+  geom_col(position = "dodge")+
+  scale_fill_manual(values = c("2023" = "turquoise", "2024" = "salmon"), 
+                    guide = guide_legend(reverse = TRUE))+
+  labs(
+    x = "",
+    y = expression("Net Carbon Flux (g C m"^-2*")"),
+    title = expression("Net Carbon Flux by Season")
+  ) +
+  geom_text(aes(label = integral_value.net), 
+            vjust = ifelse(filtered_data_net$integral_value.net >= 0, -0.7, 1.5), 
+            hjust = ifelse(filtered_data_net$year == 2023, 1.1, -0.1), 
+            colour = "black")+
+  scale_y_continuous(limits=c(-65, 30), expand = c(0,0))+
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+netseasons
+
+# png(filename = './netseasons.png',width = 7.3,height = 4.1,units = 'in',res = 2000)
+# netseasons
+# dev.off()
+
+```
+
+
+Grid Plot
+
+```{r}
+
+grid.arrange(co2seasons, ch4seasons, nrow = 1)
+
 
 ```
