@@ -14,6 +14,7 @@ library(data.table)
 library(ggplot2)
 library(lubridate)
 library(tidyverse)
+library(gridExtra)
 ```
 
 
@@ -156,11 +157,11 @@ co2model <- ggplot(data=df_avg_23_24)+
   geom_line(aes(x = TS_1_05_1, y = predicted))+
   scale_color_gradient(low = "navy", high = "salmon")+
   labs(
-    x = expression("5cm Soil Temperature ("*degree*"C)"),
-    y = expression("Half-hourly nighttime CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
+    x = expression(""),
+    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
     title = expression("Nighttime CO"[2] * " Flux vs. Soil Temperature"))+
   scale_shape_manual(name = "Year", values = c(16, 17))+
-  scale_x_continuous(limits=c(-11,15))+
+  scale_x_continuous(limits=c(-11,14))+
   scale_y_continuous(limits=c(-0.5,2.5))+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
   axis.title = element_text(size = 14),legend.position = 'none')+
@@ -186,15 +187,15 @@ ch4model <- ggplot(data=df_avg_23_24)+
   geom_line(aes(x = TS_1_05_1, y = predicted_ch4*(1/1000)))+
 scale_color_gradient(low = "navy", high = "salmon")+
   labs(
-    x = expression("5cm Soil Temperature ("*degree*"C)"),
+    x = expression(""),
     y = expression("Half-hourly CH"[4] * " Flux ("*mu*mol~m^-2~s^-1*")"),
     title = expression("CH"[4] * " Flux vs. Soil Temperature")
   )+
-  scale_x_continuous(limits = c(-11, 15))+
+  scale_x_continuous(limits = c(-11, 14))+
   scale_y_continuous(limits = c(-0.02, .10))+
   scale_shape_manual(name = "Year", values = c(16, 17))+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14))+
+  axis.title = element_text(size = 14),legend.position = 'none')+
   annotate("text", 
            x = -Inf, y = Inf, 
            hjust = -0.1, vjust = 1.3,
@@ -202,7 +203,7 @@ theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 1
            size = 5)
 
 ch4model
-
+# 
 # png(filename = './modelgrid.png',width = 9.3,height = 5.9,units = 'in',res = 2000)
 # grid.arrange(co2model, ch4model, nrow = 1)
 # dev.off()
@@ -224,10 +225,10 @@ co2model_ns <- ggplot(data=df_nospring)+
   scale_color_gradient(low = "navy", high = "salmon")+
   labs(
     x = expression("5cm Soil Temperature ("*degree*"C)"),
-    y = expression("Half-hourly nighttime CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
+    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
     title = expression("Nighttime CO"[2] * " Flux vs. Soil Temperature, Snow Melt Data Removed"))+
   scale_shape_manual(name = "Year", values = c(16, 17))+
-  scale_x_continuous(limits=c(-11,15))+
+  scale_x_continuous(limits=c(-11,14))+
   scale_y_continuous(limits=c(-0.5,2.5))+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
   axis.title = element_text(size = 14),legend.position = 'none')+
@@ -257,11 +258,11 @@ scale_color_gradient(low = "navy", high = "salmon")+
     y = expression("Half-hourly CH"[4] * " Flux ("*mu*mol~m^-2~s^-1*")"),
     title = expression("CH"[4] * " Flux vs. Soil Temperature, Snow Melt Data Removed")
   )+
-  scale_x_continuous(limits = c(-11, 15))+
+  scale_x_continuous(limits = c(-11, 14))+
   scale_y_continuous(limits = c(-0.02, .10))+
   scale_shape_manual(name = "Year", values = c(16, 17))+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14))+
+  axis.title = element_text(size = 14),legend.position = 'none')+
   annotate("text", 
            x = -Inf, y = Inf, 
            hjust = -0.1, vjust = 1.3,
@@ -270,9 +271,17 @@ theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 1
 
 ch4model_ns
 
-# png(filename = './modelgrid.png',width = 9.3,height = 5.9,units = 'in',res = 2000)
-# grid.arrange(co2model, ch4model, nrow = 1)
-# dev.off()
+
+
+png(filename = './modelgridco2.png',width = 7,height = 10,units = 'in',res = 2000)
+grid.arrange(co2model, co2model_ns, nrow = 2)
+dev.off()
+
+png(filename = './modelgridch4.png',width = 7,height = 10,units = 'in',res = 2000)
+grid.arrange(ch4model, ch4model_ns, nrow = 2)
+dev.off()
+
+
 
 
 ```
