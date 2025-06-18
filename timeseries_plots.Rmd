@@ -15,6 +15,7 @@ library(ggplot2)
 library(lubridate)
 library(tidyverse)
 library(gridExtra) 
+library(patchwork)
 
 ```
 
@@ -28,31 +29,37 @@ df_23_24 <- fread("./bothyears_HH.csv")
 
 # Carbon Timeseries
 
-Plot 1 on ameriflux poster; timeseries of GPP, ER, NEE, and CH4
+Timeseries of GPP, ER, NEE, and CH4
 
 ```{r}
 
 carbonts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
   theme_bw()+
-  geom_point(aes(y = -GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
-  geom_point(aes(y = RECO*60*60*24*(1/1000000)*12, color = "Respiration")) +
-  geom_line(aes(y = FC_F*60*60*24*(1/1000000)*12, color = "Carbon Flux"))+
-  geom_line(aes(y = FCH4_F*60*60*24*(1/1000000000)*12*13, color = "Methane Flux"))+
+  geom_line(aes(y = -GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
+  geom_line(aes(y = RECO*60*60*24*(1/1000000)*12, color = "Respiration")) +
+  geom_point(aes(y = FC_F*60*60*24*(1/1000000)*12, color = "Carbon Flux", shape = "Gapfilled"))+
+  geom_point(aes(y = FCH4_F*60*60*24*(1/1000000000)*12*13, color = "Methane Flux", shape = "Gapfilled"))+  
+  geom_point(aes(y = FC*60*60*24*(1/1000000)*12, color = "Carbon Flux", shape = "Measured"))+
+  geom_point(aes(y = FCH4*60*60*24*(1/1000000000)*12*13, color = "Methane Flux", shape = "Measured"))+
   geom_hline(yintercept=0, col="black")+
-  scale_y_continuous(limits = c(-4, 2.5), expression('CO'[2]*' Flux (g C'~m^-2~d^-1*')'),
-  sec.axis = sec_axis(~ . /13, name = expression('CH'[4]*' Flux (g C'~m^-2~d^-1*')')))+
+  scale_y_continuous(limits = c(-3.9, 2.1), expression('CO'[2]*' Flux (gC'~m^-2~d^-1*')'),
+  sec.axis = sec_axis(~ . /13, name = expression('CH'[4]*' Flux (gC'~m^-2~d^-1*')')))+
+  scale_shape_manual(name = " ",
+            values = c("Gapfilled" = 1, 
+                      "Measured" = 16),
+            breaks = c("Gapfilled", "Measured"))+
   scale_color_manual(name = " ",
             values = c("GPP" = "navy", 
                       "Respiration" = "turquoise3", 
                       "Carbon Flux" = "salmon", 
                       "Methane Flux" = "mediumorchid"),
-            breaks = c("GPP", "Respiration", 
-              "Carbon Flux", "Methane Flux"))+
+            breaks = c("Carbon Flux", "Methane Flux",
+              "GPP", "Respiration"))+
   scale_x_datetime(name = expression(""), limits = as.POSIXct(c('2022-10-16', '2024-10-19')))
 
 carbonts
 
-png(filename = './carbonts.png',width = 10.96,height = 3.67,units = 'in',res = 2000)
+png(filename = './carbonts.png',width = 10,height = 3.67,units = 'in',res = 2000)
 carbonts
 dev.off()
 
@@ -133,56 +140,60 @@ df_avg_winter$airdiff <- df_avg_winter$TA-df_avg_winter$TS_2_05_1
 #needs axis labels for dashed-dotted line
 winterts <- ggplot(data = df_avg_winter)+
   theme_bw()+
-  geom_line(aes(x = DOW, y = TS_2_05_1, color = year, linetype = "Soil T"))+
-  geom_line(aes(x = DOW, y = TA, color = year, linetype = "Air T"))+
+  geom_line(aes(x = DOW, y = TS_2_05_1, color = year, linetype = "Soil Temp"))+
+  geom_line(aes(x = DOW, y = TA, color = year, linetype = "Air Temp"))+
   scale_x_continuous(limits = c(0, 200),
     breaks = first_of_month$DOW,
     labels = first_of_month$Label)+ 
   scale_color_manual(name = " ",
             values = c("2024" = "salmon",
                       "2023" = "turquoise3"),
-            breaks = c("2024", "2023"))+
+            breaks = c("2023", "2024"))+
   scale_linetype_manual(name = " ",
-                        values = c("Soil T" = "solid",
-                          "Air T"="twodash"))+
+                        values = c("Soil Temp" = "solid",
+                          "Air Temp"="twodash"))+
   labs(
     x = expression(" "),
-    y = expression("Temp ("*degree*"C)")
+    y = expression("Temperature ("*degree*"C)")
   )
 
-# Ambient temp is dominant trend here, not interesting
-ggplot(data = df_avg_winter)+
-  theme_bw()+
-  geom_line(aes(x = DOW, y = airdiff, color = year))+
-  scale_x_continuous(limits = c(0, 200),
-    breaks = first_of_month$DOW,
-    labels = first_of_month$Label)+
-  scale_color_manual(name = " ",
-            values = c("2024" = "salmon",
-                      "2023" = "turquoise3"),
-            breaks = c("2024", "2023"))+
-  labs(
-    x = expression(" "),
-    y = expression("Temp ("*degree*"C)")
-  )
+winterts
+
+# # Ambient temp is dominant trend here, not interesting
+# ggplot(data = df_avg_winter)+
+#   theme_bw()+
+#   geom_line(aes(x = DOW, y = airdiff, color = year))+
+#   scale_x_continuous(limits = c(0, 200),
+#     breaks = first_of_month$DOW,
+#     labels = first_of_month$Label)+
+#   scale_color_manual(name = " ",
+#             values = c("2024" = "salmon",
+#                       "2023" = "turquoise3"),
+#             breaks = c("2024", "2023"))+
+#   labs(
+#     x = expression(" "),
+#     y = expression("Temp ("*degree*"C)")
+#   )
 
 wintersd <- ggplot(data = df_avg_winter)+
   theme_bw()+
-  geom_line(aes(x = DOW, y = D_SNOW, color = year))+
+  geom_line(aes(x = DOW, y = D_SNOW, color = year), show.legend = FALSE)+
   scale_x_continuous(limits = c(0, 200),
     breaks = first_of_month$DOW,
     labels = first_of_month$Label)+     
   scale_color_manual(name = " ",
             values = c("2024" = "salmon", 
                       "2023" = "turquoise3"),
-            breaks = c("2024", "2023"))+ 
+            breaks = c("2023", "2024"))+ 
   labs(
     x = expression(" "),
     y = expression("Snow Depth (cm)")
   )
 
+wintersd
+
 png(filename = './winterts.png',width = 8,height = 6,units = 'in',res = 2000)
-grid.arrange(wintersd, winterts, nrow = 2)
+wintersd / winterts + plot_layout(guides = "collect", axes = "collect")
 dev.off()
 
 

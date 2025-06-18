@@ -14,6 +14,7 @@ library(ggplot2)
 library(lubridate)
 library(tidyverse)
 library(RColorBrewer)
+library(zoo)
 
 ```
 
@@ -36,13 +37,13 @@ df_23_24 = fread('./bothyears_HH.csv')
 #Creates numeric vector of the correct length with all of the soil temperature measurement depths in cm, repeated once for each row of data collected
 
 # # To view all soil temperature variables in dataset
-# print(grep("^TS_1", names(df), value = TRUE))
+#print(grep("^TS_1", names(df_23_24), value = TRUE))
 
 #Uses depth values in cm for easy coercion to numeric later
 ts_columns <- rep(c("0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"), nrow(df_23_24))
 
 #Picks columns to move into new dataframe; 5 cm lost to make geom_raster work, could linearly interpolate or use geom_tile later?
-df_soiltemp = select(df_23_24, TIMESTAMP, grep("^TS_1", names(df), value = TRUE), -TS_1_05_1) 
+df_soiltemp = select(df_23_24, TIMESTAMP, grep("^TS_1", names(df_23_24), value = TRUE), -TS_1_05_1) 
 
 #Changes column names to line up with numeric depth values
 colnames(df_soiltemp) = c("Time", "10", "0", "20", "30", "40", "50", "60", "70", "80", "90", "100")
@@ -126,6 +127,103 @@ soiltemp <- ggplot(data = avg)+
 #   geom_vline(xintercept = as.POSIXct("2023-05-01"), color = "black", linewidth = 1.5)
 
 soiltemp
+
+#hist(df_soiltemp$Temperature)
+##Stop temp scale at 20, make 20+ its own color to help with skew
+
+# png(filename = './soiltempheatmap.png',width = 10,height = 4,units = 'in',res = 2000)
+# soiltemp
+# dev.off()
+  
+
+```
+
+
+
+## Zooom in on Spring
+
+2024
+```{r}
+
+
+soiltemp_spring24 <- ggplot(data = avg)+
+  theme_bw()+
+  aes(x=date, y=-Depth, fill= Temperature)+
+  #geom_pointrange(aes(x= Time, y= -Depth, ymin = -100, ymax = 0, color = Temperature))+
+  geom_raster(data = avg, interpolate = TRUE)+
+  scale_fill_gradient2(low = c('pink','violet','purple','blue'),mid = 'cyan',high = c('green','yellow','orange','red'),midpoint = 0,
+  limits = c(-15,20),
+  breaks = c(-10, 0, 10, 20),
+  labels = c("-10", "0", "10", "20+"),
+  name = expression("Temperature ("*degree*"C)"),
+  oob = scales::squish)+
+  theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
+  axis.title = element_text(size = 14), legend.text = element_text(size = 12))+
+  scale_y_continuous(name = "Depth (cm)",
+    # trans = "reverse",  # Reverses the direction of the axis
+    breaks = seq(0, -100, by = -10),  # Sets breaks for each 10 cm
+    labels = seq(0, 100, by = 10),
+    expand = c(0,0)
+    )+
+  scale_x_datetime(
+    name = "",
+    expand = c(0,0),
+    limits = as.POSIXct(c("2024-04-01","2024-05-15")),
+    breaks = seq(as.POSIXct("2024-04-01"), as.POSIXct("2024-05-15"), by = "5 days"),
+                    date_labels = "%b %d"
+                   )
+# +
+#   geom_vline(xintercept = as.POSIXct("2024-05-01"), color = "black", linewidth = 1.5)+
+#   geom_vline(xintercept = as.POSIXct("2023-05-01"), color = "black", linewidth = 1.5)
+
+soiltemp_spring24
+
+#hist(df_soiltemp$Temperature)
+##Stop temp scale at 20, make 20+ its own color to help with skew
+
+# png(filename = './soiltempheatmap.png',width = 10,height = 4,units = 'in',res = 2000)
+# soiltemp
+# dev.off()
+  
+
+```
+
+
+2023
+```{r}
+
+
+soiltemp_spring23 <- ggplot(data = avg)+
+  theme_bw()+
+  aes(x=date, y=-Depth, fill= Temperature)+
+  #geom_pointrange(aes(x= Time, y= -Depth, ymin = -100, ymax = 0, color = Temperature))+
+  geom_raster(data = avg, interpolate = TRUE)+
+  scale_fill_gradient2(low = c('pink','violet','purple','blue'),mid = 'cyan',high = c('green','yellow','orange','red'),midpoint = 0,
+  limits = c(-15,20),
+  breaks = c(-10, 0, 10, 20),
+  labels = c("-10", "0", "10", "20+"),
+  name = expression("Temperature ("*degree*"C)"),
+  oob = scales::squish)+
+  theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
+  axis.title = element_text(size = 14), legend.text = element_text(size = 12))+
+  scale_y_continuous(name = "Depth (cm)",
+    # trans = "reverse",  # Reverses the direction of the axis
+    breaks = seq(0, -100, by = -10),  # Sets breaks for each 10 cm
+    labels = seq(0, 100, by = 10),
+    expand = c(0,0)
+    )+
+  scale_x_datetime(
+    name = "",
+    expand = c(0,0),
+    limits = as.POSIXct(c("2023-04-01","2023-05-15")),
+    breaks = seq(as.POSIXct("2023-04-01"), as.POSIXct("2023-05-15"), by = "5 days"),
+                    date_labels = "%b %d"
+                   )
+# +
+#   geom_vline(xintercept = as.POSIXct("2024-05-01"), color = "black", linewidth = 1.5)+
+#   geom_vline(xintercept = as.POSIXct("2023-05-01"), color = "black", linewidth = 1.5)
+
+soiltemp_spring23
 
 #hist(df_soiltemp$Temperature)
 ##Stop temp scale at 20, make 20+ its own color to help with skew
