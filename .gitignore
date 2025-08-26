@@ -2,7 +2,7 @@
 *.jpg
 
 # Flux data
-*.csv
+#*.csv
 
 # History files
 .Rhistory
