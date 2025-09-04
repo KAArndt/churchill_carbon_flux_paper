@@ -23,18 +23,14 @@ library(patchwork)
 
 ```{r}
 
-df_avg_y1 <- fread('./year1_daily_avg.csv')
-df_avg_y2 <- fread('./year2_daily_avg.csv')
 df_avg_23_24 <- fread('./bothyears_daily_avg.csv')
 
-#Creates dataframe with both years of data
-df_merge <- merge(df_avg_y1, df_avg_y2, by = "DOY", suffixes = c(".y1", ".y2"))
 
 #dataframe with spring removed
 
 
-df_nospring <- df_avg_23_24 %>%
-  filter(season_name != "Snow Melt")
+df_nogs <- df_avg_23_24 %>%
+  filter(season_name != "Growing Season")
 
 
 ```
@@ -66,49 +62,17 @@ df_avg_23_24$predicted_ch4 <- predict(exp_model_ch4, newdata = df_avg_23_24)
 ####Both years, spring removed
 
 #co2
-exp_model_ns <- nls(FC_night ~ a * exp(b * TS_1_0_1), data = df_nospring, start = list(a = 1, b = 0.1))
+exp_model_ngs <- nls(FC ~ a * exp(b * TS_1_0_1), data = df_nogs, start = list(a = 1, b = 0.1))
 
 # Generate predicted values
-df_nospring$predicted <- predict(exp_model_ns, newdata = df_nospring)
+df_nogs$predicted <- predict(exp_model_ngs, newdata = df_nogs)
 
 
 #ch4
-exp_model_ch4_ns <- nls(FCH4 ~ a * exp(b * TS_1_0_1), data = df_nospring, start = list(a = 1, b = 0.1))
+exp_model_ch4_ngs <- nls(FCH4 ~ a * exp(b * TS_1_0_1), data = df_nogs, start = list(a = 1, b = 0.1))
 
 # Generate predicted values
-df_nospring$predicted_ch4 <- predict(exp_model_ch4_ns, newdata = df_nospring)
-
-
-
-# ### Year 1
-# 
-# #co2
-# exp_model.y1 <- nls(FC_night.y1 ~ a * exp(b * TS_1_0_1.y1), data = df_merge, start = list(a = 1, b = 0.1))
-# 
-# # Generate predicted values
-# df_merge$predicted.y1 <- predict(exp_model.y1, newdata = df_merge)
-# 
-# 
-# 
-# #ch4
-# exp_model_ch4.y1 <- nls(FCH4.y1 ~ a * exp(b * TS_1_0_1.y1), data = df_merge, start = list(a = 1, b = 0.1))
-# 
-# # Generate predicted values
-# df_merge$predicted_ch4.y1 <- predict(exp_model_ch4.y1, newdata = df_merge)
-# 
-# 
-# ### Year 2
-# 
-# exp_model.y2 <- nls(FC_night.y2 ~ a * exp(b * TS_1_0_1.y2), data = df_merge, start = list(a = 1, b = 0.1))
-# 
-# # Generate predicted values
-# df_merge$predicted.y2 <- predict(exp_model.y2, newdata = df_merge)
-# 
-# #ch4
-# exp_model_ch4.y2 <- nls(FCH4.y2 ~ a * exp(b * TS_1_0_1.y2), data = df_merge, start = list(a = 1, b = 0.1))
-# 
-# # Generate predicted values
-# df_merge$predicted_ch4.y2 <- predict(exp_model_ch4.y2, newdata = df_merge)
+df_nogs$predicted_ch4 <- predict(exp_model_ch4_ngs, newdata = df_nogs)
 
 
 ```
@@ -135,8 +99,8 @@ rsq_co2 <- r_squared(exp_model, df_avg_23_24$FC_night)
 rsq_ch4 <- r_squared(exp_model_ch4, df_avg_23_24$FCH4)
 
 #No Spring
-rsq_co2_ns <- r_squared(exp_model_ns, df_nospring$FC_night)
-rsq_ch4_ns <- r_squared(exp_model_ch4_ns, df_nospring$FCH4)
+rsq_co2_ngs <- r_squared(exp_model_ngs, df_nogs$FC_night)
+rsq_ch4_ngs <- r_squared(exp_model_ch4_ngs, df_nogs$FCH4)
 
 
 ```
@@ -149,7 +113,7 @@ Plots flux variables vs. 5cm soil temp to visualize temperature/co2 flux relatio
 Temp relationship plots with daily averages
 
 ```{r}
-#Both Years CO2
+#Both Years Nighttime CO2
 
 co2model <- ggplot(data=df_avg_23_24)+
   theme_bw()+
@@ -165,8 +129,8 @@ co2model <- ggplot(data=df_avg_23_24)+
   scale_shape_manual(name = "Year", values = c(16, 17))+
   scale_x_continuous(limits=c(-11,14))+
   scale_y_continuous(limits=c(-0.5,2.5))+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14),legend.position = 'none')+
+theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10), 
+  axis.title = element_text(size = 12),legend.position = 'none')+
   annotate("text", 
            x = -Inf, y = Inf, 
            hjust = -0.1, vjust = 1.3,
@@ -177,6 +141,38 @@ co2model
 
 
 
+```
+
+
+Two main plots:
+
+```{r}
+
+co2model_ngs <- ggplot(data=df_nogs)+
+  theme_bw()+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, shape = factor(year)))+
+  geom_line(aes(x = TS_1_0_1, y = predicted))+
+  scale_color_gradient(low = "navy", high = "salmon")+
+  labs(
+    x = expression("5cm Soil Temperature ("*degree*"C)"),
+    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
+    title = expression("CO"[2] * " Flux vs. Soil Temperature"),
+    subtitle = expression("Growing season data removed"))+
+  scale_shape_manual(name = "Year", values = c(16, 17))+
+  scale_x_continuous(limits=c(-11,14))+
+  scale_y_continuous(limits=c(-0.5,2.5))+
+theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
+  axis.title = element_text(size = 14),
+  plot.subtitle = element_text(size = 12, face = "italic"))+
+  annotate("text", 
+           x = -Inf, y = Inf, 
+           hjust = -0.1, vjust = 1.3,
+           label = paste0("R² = ", round(rsq_co2_ngs, 2)),
+           size = 5)
+
+co2model_ngs
 
 
 
@@ -189,15 +185,17 @@ ch4model <- ggplot(data=df_avg_23_24)+
   geom_line(aes(x = TS_1_0_1, y = predicted_ch4*(1/1000)))+
 scale_color_gradient(low = "navy", high = "salmon")+
   labs(
-    x = expression(""),
+    x = expression("5cm Soil Temperature ("*degree*"C)"),
     y = expression("Half-hourly CH "[4] * " Flux ("*mu*mol~m^-2~s^-1*")"),
-    title = expression("CH"[4] * " Flux vs. Soil Temperature")
+    title = expression("CH"[4] * " Flux vs. Soil Temperature"),
+    subtitle = expression("Full year")
   )+
   scale_x_continuous(limits = c(-11, 14))+
   scale_y_continuous(limits = c(-0.02, .10))+
   scale_shape_manual(name = "Year", values = c(16, 17))+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14),legend.position = 'none')+
+  axis.title = element_text(size = 14),
+  plot.subtitle = element_text(size = 12, face = "italic"))+
   annotate("text", 
            x = -Inf, y = Inf, 
            hjust = -0.1, vjust = 1.3,
@@ -206,91 +204,28 @@ theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 1
 
 ch4model
 
-# png(filename = './modelgrid.png',width = 9.3,height = 5.9,units = 'in',res = 2000)
-# grid.arrange(co2model, ch4model, nrow = 1)
-# dev.off()
-
-
-```
-
-
-With Spring removed:
-
-```{r}
-
-co2model_ns <- ggplot(data=df_nospring)+
-  theme_bw()+
-  geom_hline(yintercept = 0)+
-  geom_vline(xintercept = 0)+
-  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, shape = factor(year)))+
-  geom_line(aes(x = TS_1_0_1, y = predicted))+
-  scale_color_gradient(low = "navy", high = "salmon")+
-  labs(
-    x = expression("5cm Soil Temperature ("*degree*"C)"),
-    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
-    title = expression("Nighttime CO"[2] * " Flux vs. Soil Temperature, Snow Melt Data Removed"))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
-  scale_x_continuous(limits=c(-11,14))+
-  scale_y_continuous(limits=c(-0.5,2.5))+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14),legend.position = 'none')+
-  annotate("text", 
-           x = -Inf, y = Inf, 
-           hjust = -0.1, vjust = 1.3,
-           label = paste0("R² = ", round(rsq_co2_ns, 2)),
-           size = 5)
-
-co2model_ns
 
 
 
 
 
-
-#Methane vs. soil temp
-
-ch4model_ns <- ggplot(data=df_nospring)+
-  geom_vline(xintercept=0)+
-  theme_bw()+
-  geom_point(aes(x=TS_1_0_1, y=FCH4*(1/1000), col = DOY,  shape = factor(year)))+
-  geom_line(aes(x = TS_1_0_1, y = predicted_ch4*(1/1000)))+
-scale_color_gradient(low = "navy", high = "salmon")+
-  labs(
-    x = expression("5cm Soil Temperature ("*degree*"C)"),
-    y = expression("Half-hourly CH "[4] * " Flux ("*mu*mol~m^-2~s^-1*")"),
-    title = expression(atop("CH"[4] * " Flux vs. Soil Temperature", "Snow Melt Data Removed"))
-  )+
-  scale_x_continuous(limits = c(-11, 14))+
-  scale_y_continuous(limits = c(-0.02, .10))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14),legend.position = 'none')+
-  annotate("text", 
-           x = -Inf, y = Inf, 
-           hjust = -0.1, vjust = 1.3,
-           label = paste0("R² = ", round(rsq_ch4_ns, 2)),
-           size = 5)
-
-ch4model_ns
-
-
-# 
-# png(filename = './modelgridco2.png',width = 7,height = 10,units = 'in',res = 2000)
-# grid.arrange(co2model, co2model_ns, nrow = 2)
-# dev.off()
-# 
-# png(filename = './modelgridch4.png',width = 7,height = 10,units = 'in',res = 2000)
-# grid.arrange(ch4model, ch4model_ns, nrow = 2)
-# dev.off()
-
-png(filename = './modelgridall.png',width = 10,height = 10,units = 'in',res = 2000)
-co2model + ch4model + co2model_ns + ch4model_ns + plot_layout(guides = "collect", axes = "collect")
+png(filename = './modelgrid_nogsco2.png',width = 12,height = 6,units = 'in',res = 2000)
+co2model_ngs + ch4model + plot_layout(guides = "collect")
 dev.off()
 
 
-
-
 ```
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## Individual Seasons
@@ -465,108 +400,6 @@ rsq_lm_ch4_fall <- r_squared(lm_model_ch4_fall, df_fall$FCH4)
 #winter
 rsq_lm_co2_winter <- r_squared(lm_model_winter, df_winter$FC_night)
 rsq_lm_ch4_winter <- r_squared(lm_model_ch4_winter, df_winter$FCH4)
-
-
-
-```
-
-```{r}
-
-co2model_spring <- ggplot(data=df_spring)+
-  theme_bw()+
-  geom_hline(yintercept = 0)+
-  geom_vline(xintercept = 0)+
-  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, shape = factor(year)))+
-  geom_line(aes(x = TS_1_0_1, y = predicted))+
-  scale_color_gradient(low = "navy", high = "salmon")+
-  labs(
-    x = expression("Soil Temperature ("*degree*"C)"),
-    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
-    title = expression("Nighttime CO"[2] * " Flux vs. Soil Temperature, Spring"))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
-  scale_x_continuous(limits=c(-11,14))+
-  scale_y_continuous(limits=c(-0.5,2.5))+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14),legend.position = 'none')+
-  annotate("text", 
-           x = -Inf, y = Inf, 
-           hjust = -0.1, vjust = 1.3,
-           label = paste0("R² = ", round(rsq_co2_spring, 2)),
-           size = 5)
-
-co2model_spring
-
-co2model_gs <- ggplot(data=df_gs)+
-  theme_bw()+
-  geom_hline(yintercept = 0)+
-  geom_vline(xintercept = 0)+
-  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, shape = factor(year)))+
-  geom_line(aes(x = TS_1_0_1, y = predicted))+
-  scale_color_gradient(low = "navy", high = "salmon")+
-  labs(
-    x = expression("Soil Temperature ("*degree*"C)"),
-    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
-    title = expression("Nighttime CO"[2] * " Flux vs. Soil Temperature, Growing Season"))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
-  scale_x_continuous(limits=c(-11,14))+
-  scale_y_continuous(limits=c(-0.5,2.5))+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14),legend.position = 'none')+
-  annotate("text", 
-           x = -Inf, y = Inf, 
-           hjust = -0.1, vjust = 1.3,
-           label = paste0("R² = ", round(rsq_co2_gs, 2)),
-           size = 5)
-
-co2model_gs
-
-co2model_fall <- ggplot(data=df_fall)+
-  theme_bw()+
-  geom_hline(yintercept = 0)+
-  geom_vline(xintercept = 0)+
-  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, shape = factor(year)))+
-  geom_line(aes(x = TS_1_0_1, y = predicted))+
-  scale_color_gradient(low = "navy", high = "salmon")+
-  labs(
-    x = expression("Soil Temperature ("*degree*"C)"),
-    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
-    title = expression("Nighttime CO"[2] * " Flux vs. Soil Temperature, Fall"))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
-  scale_x_continuous(limits=c(-11,14))+
-  scale_y_continuous(limits=c(-0.5,2.5))+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14),legend.position = 'none')+
-  annotate("text", 
-           x = -Inf, y = Inf, 
-           hjust = -0.1, vjust = 1.3,
-           label = paste0("R² = ", round(rsq_co2_fall, 2)),
-           size = 5)
-
-co2model_fall
-
-co2model_winter <- ggplot(data=df_winter)+
-  theme_bw()+
-  geom_hline(yintercept = 0)+
-  geom_vline(xintercept = 0)+
-  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, shape = factor(year)))+
-  geom_line(aes(x = TS_1_0_1, y = predicted))+
-  scale_color_gradient(low = "navy", high = "salmon")+
-  labs(
-    x = expression("Soil Temperature ("*degree*"C)"),
-    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
-    title = expression("Nighttime CO"[2] * " Flux vs. Soil Temperature, Winter"))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
-  scale_x_continuous(limits=c(-11,14))+
-  scale_y_continuous(limits=c(-0.5,2.5))+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14),legend.position = 'none')+
-  annotate("text", 
-           x = -Inf, y = Inf, 
-           hjust = -0.1, vjust = 1.3,
-           label = paste0("R² = ", round(rsq_co2_winter, 2)),
-           size = 5)
-
-co2model_winter
 
 
 

@@ -17,8 +17,8 @@ df$date = df$TIMESTAMP
 
 ############################################################################################
 # play with conditions where light response is most valid, i.e., after greenup during the growing season
-gs = subset(df, df$season_name %in% c("Growing Season") & df$PPFD_IN > 0)
-#gs = subset(df, df$TS_2_1_1 > 10  & df$PPFD_IN > 0)
+#gs = subset(df, df$season_name %in% c("Growing Season") & df$PPFD_IN > 0)
+gs = subset(df, df$TS_2_05_1 > 5  & df$PPFD_IN > 0)
 
 gs = gs[complete.cases(gs$PPFD_IN),]
 
@@ -59,7 +59,7 @@ lrc <- ggplot(data = gs)+
   labs(
     y = expression('Half-hourly CO '[2] * ' Flux ('*mu*mol~m^-2~s^-1*')'),
     x = expression('PAR In ('*mu*'mol m'^-2*'s'^-1*')'),
-    title = "Light Response Curve V2 - Growing Season Only",
+    title = "Light Response Curve - 5cm Soil Temp > 5",
     color = expression("Air T ("*degree*"C)"))
 lrc
 
@@ -89,12 +89,12 @@ lm <- ggplot(data = gs,aes(fit*-1,FC))+
   labs(
     y = expression('Half-hourly CO '[2] * ' Flux ('*mu*mol~m^-2~s^-1*')'),
     x = expression('Fit * -1'),
-    title = "LRC Accuracy V2 - Growing Season Only",
+    title = "LRC Accuracy - 5cm Soil Temp > 5",
     color = expression("Air T ("*degree*"C)"))
 lm
 
 
-png(filename = './lrc_v2.png',width = 14,height = 6.72,units = 'in',res = 2000)
+png(filename = './lrc_v8.png',width = 14,height = 6.72,units = 'in',res = 2000)
 lrc + lm + plot_layout(guides = "collect", axes = "collect")
 dev.off()
 
