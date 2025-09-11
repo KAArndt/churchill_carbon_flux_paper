@@ -17,8 +17,10 @@ df$date = df$TIMESTAMP
 
 ############################################################################################
 # play with conditions where light response is most valid, i.e., after greenup during the growing season
-#gs = subset(df, df$season_name %in% c("Growing Season") & df$PPFD_IN > 0)
-gs = subset(df, df$TS_2_05_1 > 5  & df$PPFD_IN > 0)
+gs = subset(df, df$season_name %in% c("Growing Season") & df$PPFD_IN > 0)
+gs$FC = ifelse(gs$FC < -5 & gs$PPFD_IN < 400,NA,gs$FC)
+
+#gs = subset(df, df$TS_2_05_1 > 5  & df$PPFD_IN > 0)
 
 gs = gs[complete.cases(gs$PPFD_IN),]
 
@@ -41,6 +43,20 @@ alpha <- parameters["alpha", "Estimate"]
 GPP_ref <- parameters ["GPP_ref", "Estimate"]
 
 
+gs$FC = ifelse(gs$FC < -5 & gs$PPFD_IN < 400,NA,gs$FC)
+gs$lrfit = fit
+
+gs = gs[order(gs$PPFD_IN),]
+
+α = rep(0.016,2682)
+PPFDref = rep(1500,2682)
+GPPref = rep(4.29,2682)
+Reco = gs$RECO
+ppfd = gs$PPFD_IN
+
+line = α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-mean(gs$RECO)
+
+mean(gs$RECO)
 #plot the fit data vs the real PAR, NEE relationship
 lrc <- ggplot(data = gs)+
   theme(
@@ -50,7 +66,9 @@ lrc <- ggplot(data = gs)+
     axis.title.y = element_text(size = 14),axis.title.x = element_text(size = 14))+
   geom_hline(aes(yintercept = 0),col = 'black')+
   geom_point(aes(PPFD_IN,FC,color=TA))+
-  geom_line(aes(PPFD_IN,fit*-1),col='red')+
+    geom_line(aes(PPFD_IN,line*-1),col='red')+
+  geom_smooth(formula = y ~ α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-Reco,col='red',aes(PPFD_IN,FC),method = 'lm')+
+#  geom_line(aes(PPFD_IN,lrfit*-1),col='red')+
   annotate("text", 
            x = Inf, y = Inf, 
            hjust = 1.1, vjust = 1.3,
@@ -65,15 +83,16 @@ lrc
 
 
 #how good did this model perform?
-lr.mod = lm(gs$FC ~ fit*-1)
+lr.mod = lm(gs$FC ~ line*-1)
 lr.mod_summary <- summary(lr.mod)
 lr.mod_summary
+hist(lr.mod_summary$residuals)
 
 #Store r squared for plotting
 r_sq <- lr.mod_summary$r.squared
 
 #see how it compares to the real data
-lm <- ggplot(data = gs,aes(fit*-1,FC))+
+lm <- ggplot(data = gs,aes(line*-1,FC))+
   theme(
     plot.background = element_blank(),
     panel.grid.minor = element_blank(),
@@ -81,6 +100,7 @@ lm <- ggplot(data = gs,aes(fit*-1,FC))+
     axis.title.y = element_text(size = 14),axis.title.x = element_text(size = 14))+
   geom_point(aes(color = TA))+
   geom_smooth(method = 'lm', color= "red")+
+  scale_color_viridis_c()+
   annotate("text", 
            x = -Inf, y = Inf, 
            hjust = -0.3, vjust = 1.5,
