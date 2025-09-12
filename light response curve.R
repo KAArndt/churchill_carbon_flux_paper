@@ -18,7 +18,7 @@ df$date = df$TIMESTAMP
 ############################################################################################
 # play with conditions where light response is most valid, i.e., after greenup during the growing season
 gs = subset(df, df$season_name %in% c("Growing Season") & df$PPFD_IN > 0)
-gs$FC = ifelse(gs$FC < -5 & gs$PPFD_IN < 400,NA,gs$FC)
+# gs$FC = ifelse(gs$FC < -5 & gs$PPFD_IN < 400,NA,gs$FC)
 
 #gs = subset(df, df$TS_2_05_1 > 5  & df$PPFD_IN > 0)
 
@@ -65,10 +65,11 @@ lrc <- ggplot(data = gs)+
     axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
     axis.title.y = element_text(size = 14),axis.title.x = element_text(size = 14))+
   geom_hline(aes(yintercept = 0),col = 'black')+
-  geom_point(aes(PPFD_IN,FC,color=TA))+
+  geom_point(aes(PPFD_IN,FC, col = SWC_2_2_1))+
     geom_line(aes(PPFD_IN,line*-1),col='red')+
   geom_smooth(formula = y ~ α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-Reco,col='red',aes(PPFD_IN,FC),method = 'lm')+
 #  geom_line(aes(PPFD_IN,lrfit*-1),col='red')+
+  scale_color_viridis_c()+
   annotate("text", 
            x = Inf, y = Inf, 
            hjust = 1.1, vjust = 1.3,
@@ -77,8 +78,8 @@ lrc <- ggplot(data = gs)+
   labs(
     y = expression('Half-hourly CO '[2] * ' Flux ('*mu*mol~m^-2~s^-1*')'),
     x = expression('PAR In ('*mu*'mol m'^-2*'s'^-1*')'),
-    title = "Light Response Curve - 5cm Soil Temp > 5",
-    color = expression("Air T ("*degree*"C)"))
+    title = "Light Response Curve - Growing Season Only",
+    color = expression("SWC (%)"))
 lrc
 
 
@@ -114,15 +115,18 @@ lm <- ggplot(data = gs,aes(line*-1,FC))+
 lm
 
 
-png(filename = './lrc_v8.png',width = 14,height = 6.72,units = 'in',res = 2000)
-lrc + lm + plot_layout(guides = "collect", axes = "collect")
+png(filename = './lrc_smooth.png',width = 10,height = 6.72,units = 'in',res = 2000)
+lrc
 dev.off()
 
 
 #approximately what doy is here?
 #gs$doy = as.numeric(format(gs$date,'%j'))
 
-
+ggplot(data = df)+
+  geom_point(aes(x = TIMESTAMP, y = SWC_2_2_1)) +
+  scale_x_datetime(name = expression(""), limits = as.POSIXct(c('2024-07-01', '2024-08-20'))) +
+  scale_y_continuous(name = expression(""), limits = c(70, 80))
 
 
 
