@@ -17,7 +17,7 @@ library(imager)
 # plotFootprint(fp)
 
 #personal API key, REMOVE BEFORE PUSHING TO GIT!!!!!!!!!!!!!!
-register_google(key = 'AIzaSyBY4W_hzCFk2geC0uXXeOH-tqRO7eqF9Rc')
+register_google(key = '')
 #tester
 #coordinates of the churchill tower
 coords = c(-93.830758,58.665705)
