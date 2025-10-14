@@ -1,0 +1,506 @@
+---
+title: "Monthly Average Biomet Plot"
+author: "Dani Trangmoe"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r}
+
+rm(list = ls())
+Sys.setenv(TZ = "UTC")
+
+library(data.table)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(gridExtra) 
+library(patchwork)
+library(plotrix)
+library(zoo)
+
+```
+
+Load Dataframe
+```{r}
+
+df_avg_23_24 <- fread('./bothyears_daily_avg.csv')
+
+```
+
+Average by Month
+```{r}
+
+df_avg_23_24$month <- as.integer(format(df_avg_23_24$TIMESTAMP_END, "%m"))
+
+
+df_avg_biomet <- df_avg_23_24 %>%
+  group_by(month, year) %>%
+  summarize(
+    nee = round(mean(FC, na.rm = TRUE), 3),
+    ch4 = round(mean(FCH4, na.rm = TRUE), 3),
+    gpp = round(mean(GPP_F, na.rm = TRUE), 3),
+    er = round(mean(RECO, na.rm = TRUE), 3),
+    tair = round(mean(TA, na.rm = TRUE), 2),
+    tsoil5 = round(mean(TS_2_05_1, na.rm = TRUE), 2),
+    swc = round(mean(SWC_1_1_1, na.rm = TRUE), 2),
+    ws = round(mean(WS, na.rm = TRUE), 2),
+    dsnow = round(mean(D_SNOW, na.rm = TRUE), 2),
+    albedo = round(mean(ALB, na.rm = TRUE), 2),
+    netrad = round(mean(NETRAD, na.rm = TRUE), 2),
+    parin = round(mean(PPFD_IN, na.rm = TRUE), 2),
+    precip = round(mean(P, na.rm = TRUE), 2),
+    vpd = round(mean(VPD, na.rm = TRUE), 2),
+    
+    nee_se = round(std.error(FC, na.rm = TRUE), 3),
+    ch4_se = round(std.error(FCH4, na.rm = TRUE), 3),
+    gpp_se = round(std.error(GPP_F, na.rm = TRUE), 3),
+    er_se = round(std.error(RECO, na.rm = TRUE), 3),
+    tair_se = round(std.error(TA, na.rm = TRUE), 2),
+    tsoil5_se = round(std.error(TS_2_05_1, na.rm = TRUE), 2),
+    swc_se = round(std.error(SWC_1_1_1, na.rm = TRUE), 2),
+    ws_se = round(std.error(WS, na.rm = TRUE), 2),
+    dsnow_se = round(std.error(D_SNOW, na.rm = TRUE), 2),
+    albedo_se = round(std.error(ALB, na.rm = TRUE), 2),
+    netrad_se = round(std.error(NETRAD, na.rm = TRUE), 2),
+    parin_se = round(std.error(PPFD_IN, na.rm = TRUE), 2),
+    precip_se = round(std.error(P, na.rm = TRUE), 2),
+    vpd_se = round(std.error(VPD, na.rm = TRUE), 2)
+    
+    ) %>%
+  pivot_wider(names_from = year, values_from = c(nee, ch4, gpp, er, tair, tsoil5, swc, ws, dsnow, albedo, netrad, parin, precip, vpd, nee_se, ch4_se, gpp_se, er_se, tair_se, tsoil5_se, swc_se, ws_se, dsnow_se, albedo_se, netrad_se, parin_se, precip_se, vpd_se))
+
+
+
+df_avg_biomet[df_avg_biomet == 0] <- NA
+
+
+
+```
+
+# Plots
+
+```{r}
+
+
+#TA
+
+tair <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank(),
+  legend.position = "none")+
+  geom_line(aes(x = month, y = tair_2023, color = "2023"))+
+  geom_line(aes(x = month, y = tair_2024, color = "2024"))+
+  geom_point(aes(x = month, y = tair_2023, color = "2023"))+
+  geom_point(aes(x = month, y = tair_2024, color = "2024"))+
+  geom_errorbar(
+    aes(x = month,
+        ymin = tair_2023 - tair_se_2023,
+        ymax = tair_2023 + tair_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = tair_2024 - tair_se_2024,
+        ymax = tair_2024 + tair_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  geom_hline(aes(yintercept = 0, color = "black"))+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('Air Temperature ('*degree*'C)'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+
+# SWC
+
+swc <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank(),
+  legend.position = "none")+
+  geom_line(aes(x = month, y = swc_2023, color = "2023"))+
+  geom_line(aes(x = month, y = swc_2024, color = "2024"))+
+  geom_point(aes(x = month, y = swc_2023, color = "2023"))+
+  geom_point(aes(x = month, y = swc_2024, color = "2024"))+
+    geom_errorbar(
+    aes(x = month,
+        ymin = swc_2023 - swc_se_2023,
+        ymax = swc_2023 + swc_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = swc_2024 - swc_se_2024,
+        ymax = swc_2024 + swc_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('Hummock SWC (%)'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+#Net Rad
+
+netrad <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank(),
+  legend.position = "none")+
+  geom_line(aes(x = month, y = netrad_2023, color = "2023"))+
+  geom_line(aes(x = month, y = netrad_2024, color = "2024"))+
+  geom_point(aes(x = month, y = netrad_2023, color = "2023"))+
+  geom_point(aes(x = month, y = netrad_2024, color = "2024"))+
+    geom_errorbar(
+    aes(x = month,
+        ymin = netrad_2023 - netrad_se_2023,
+        ymax = netrad_2023 + netrad_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = netrad_2024 - netrad_se_2024,
+        ymax = netrad_2024 + netrad_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  geom_hline(aes(yintercept = 0, color = "black"))+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('Net Radiation  (W m'^-2*')'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+#Precip
+
+
+precip <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank())+
+  geom_line(aes(x = month, y = precip_2023, color = "2023"))+
+  geom_line(aes(x = month, y = precip_2024, color = "2024"))+
+  geom_point(aes(x = month, y = precip_2023, color = "2023"))+
+  geom_point(aes(x = month, y = precip_2024, color = "2024"))+  geom_errorbar(
+    aes(x = month,
+        ymin = precip_2023 - precip_se_2023,
+        ymax = precip_2023 + precip_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = precip_2024 - precip_se_2024,
+        ymax = precip_2024 + precip_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('Rain (mm)'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+#wind speed
+
+
+ws <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank())+
+  geom_line(aes(x = month, y = ws_2023, color = "2023"))+
+  geom_line(aes(x = month, y = ws_2024, color = "2024"))+
+  geom_point(aes(x = month, y = ws_2023, color = "2023"))+
+  geom_point(aes(x = month, y = ws_2024, color = "2024"))+  
+  geom_errorbar(
+    aes(x = month,
+        ymin = ws_2023 - ws_se_2023,
+        ymax = ws_2023 + ws_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = ws_2024 - ws_se_2024,
+        ymax = ws_2024 + ws_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('Wind Speed (ms'^-1*')'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+#VPD
+
+
+vpd <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank())+
+  geom_line(aes(x = month, y = vpd_2023, color = "2023"))+
+  geom_line(aes(x = month, y = vpd_2024, color = "2024"))+
+  geom_point(aes(x = month, y = vpd_2023, color = "2023"))+
+  geom_point(aes(x = month, y = vpd_2024, color = "2024"))+
+    geom_errorbar(
+    aes(x = month,
+        ymin = vpd_2023 - vpd_se_2023,
+        ymax = vpd_2023 + vpd_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = vpd_2024 - vpd_se_2024,
+        ymax = vpd_2024 + vpd_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('VPD (hPa)'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+#PAR In
+
+
+parin <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank())+
+  geom_line(aes(x = month, y = parin_2023, color = "2023"))+
+  geom_line(aes(x = month, y = parin_2024, color = "2024"))+
+  geom_point(aes(x = month, y = parin_2023, color = "2023"))+
+  geom_point(aes(x = month, y = parin_2024, color = "2024"))+
+    geom_errorbar(
+    aes(x = month,
+        ymin = parin_2023 - parin_se_2023,
+        ymax = parin_2023 + parin_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = parin_2024 - parin_se_2024,
+        ymax = parin_2024 + parin_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('PAR In ('*mu*'mol m'^-2*'s'^-1*')'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+
+
+```
+
+```{r}
+
+png(filename = './monthly_avgs.png',width = 12,height = 6,units = 'in',res = 2000)
+(((tair + swc + netrad) / (ws + vpd + parin))) + plot_layout(guides = "collect", axes = "collect")
+dev.off()
+
+```
+
+
+
+Flux Values
+
+
+
+
+```{r}
+nee <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank())+
+  geom_line(aes(x = month, y = nee_2023, color = "2023"))+
+  geom_line(aes(x = month, y = nee_2024, color = "2024"))+
+  geom_point(aes(x = month, y = nee_2023, color = "2023"))+
+  geom_point(aes(x = month, y = nee_2024, color = "2024"))+
+    geom_errorbar(
+    aes(x = month,
+        ymin = nee_2023 - nee_se_2023,
+        ymax = nee_2023 + nee_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = nee_2024 - nee_se_2024,
+        ymax = nee_2024 + nee_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('NEE ('*mu*mol~m^-2~s^-1*')'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+nee
+
+
+ch4 <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank())+
+  geom_line(aes(x = month, y = ch4_2023, color = "2023"))+
+  geom_line(aes(x = month, y = ch4_2024, color = "2024"))+
+  geom_point(aes(x = month, y = ch4_2023, color = "2023"))+
+  geom_point(aes(x = month, y = ch4_2024, color = "2024"))+
+    geom_errorbar(
+    aes(x = month,
+        ymin = ch4_2023 - ch4_se_2023,
+        ymax = ch4_2023 + ch4_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = ch4_2024 - ch4_se_2024,
+        ymax = ch4_2024 + ch4_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('Methane Flux ('*mu*mol~m^-2~s^-1*')'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+ch4
+
+
+gpp <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank())+
+  geom_line(aes(x = month, y = gpp_2023, color = "2023"))+
+  geom_line(aes(x = month, y = gpp_2024, color = "2024"))+
+  geom_point(aes(x = month, y = gpp_2023, color = "2023"))+
+  geom_point(aes(x = month, y = gpp_2024, color = "2024"))+
+    geom_errorbar(
+    aes(x = month,
+        ymin = gpp_2023 - gpp_se_2023,
+        ymax = gpp_2023 + gpp_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = gpp_2024 - gpp_se_2024,
+        ymax = gpp_2024 + gpp_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('GPP ('*mu*mol~m^-2~s^-1*')'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+gpp
+
+
+er <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank())+
+  geom_line(aes(x = month, y = er_2023, color = "2023"))+
+  geom_line(aes(x = month, y = er_2024, color = "2024"))+
+  geom_point(aes(x = month, y = er_2023, color = "2023"))+
+  geom_point(aes(x = month, y = er_2024, color = "2024"))+
+    geom_errorbar(
+    aes(x = month,
+        ymin = er_2023 - er_se_2023,
+        ymax = er_2023 + er_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = er_2024 - er_se_2024,
+        ymax = er_2024 + er_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('ER ('*mu*mol~m^-2~s^-1*')'))+
+  scale_color_manual(name = " ",
+            values = c("2023" = "turquoise3", 
+                      "2024" = "salmon"),
+            breaks = c("2023", "2024"))
+
+er
+
+
+
+```
+
+```{r}
+
+png(filename = './monthly_avgs_flux.png',width = 12,height = 6,units = 'in',res = 2000)
+(((nee + ch4) / (gpp + er))) + plot_layout(guides = "collect", axes = "collect")
+dev.off()
+
+```
+
+
+

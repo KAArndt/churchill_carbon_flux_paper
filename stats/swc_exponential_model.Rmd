@@ -1,0 +1,174 @@
+---
+title: "SWC Exponential Model"
+author: "Dani Trangmoe"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r, include=FALSE}
+rm(list = ls())
+Sys.setenv(TZ = "UTC")
+
+library(data.table)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(gridExtra)
+```
+
+
+# Load Data 
+
+```{r}
+
+df_avg_y1 <- fread('./year1_daily_avg.csv')
+df_avg_y2 <- fread('./year2_daily_avg.csv')
+df_avg_23_24 <- fread('./bothyears_daily_avg.csv')
+
+#Creates dataframe with both years of data with one DOY timeseries
+df_merge <- merge(df_avg_y1, df_avg_y2, by = "DOY", suffixes = c(".y1", ".y2"))
+
+#Dataframe with spring removed
+
+
+df_nospring <- df_avg_23_24 %>%
+  filter(season_name != "Snow Melt")
+
+```
+
+#  SWC/ER Relationship
+
+### Create Exp. Model
+```{r}
+
+###Both years
+
+#co2 - SWC_1_1_1 has best r squared 
+exp_model1 <- nls(FC_night ~ a * exp(b * SWC_1_1_1), data = df_avg_23_24, start = list(a = 1, b = 0.1))
+
+# Generate predicted values
+df_avg_23_24$predicted1 <- predict(exp_model1, newdata = df_avg_23_24)
+
+exp_model2 <- nls(FC_night ~ a * exp(b * SWC_2_1_1), data = df_avg_23_24, start = list(a = 1, b = 0.1))
+
+# Generate predicted values
+df_avg_23_24$predicted2 <- predict(exp_model2, newdata = df_avg_23_24)
+
+exp_model3 <- nls(FC_night ~ a * exp(b * SWC_2_2_1), data = df_avg_23_24, start = list(a = 1, b = 0.1))
+
+# Generate predicted values
+df_avg_23_24$predicted3 <- predict(exp_model3, newdata = df_avg_23_24)
+
+
+
+#ch4
+exp_model_ch4 <- nls(FCH4 ~ a * exp(b * SWC_1_1_1), data = df_avg_23_24, start = list(a = 1, b = 0.1))
+
+# Generate predicted values
+df_avg_23_24$predicted_ch4 <- predict(exp_model_ch4, newdata = df_avg_23_24)
+
+
+
+```
+
+## R Squared Values 
+
+```{r}
+
+
+# R squared values
+
+r_squared <- function(model, column) {
+  
+  RSS <- sum(residuals(model)^2) # Residual sum of sqares
+  TSS <- sum((column - mean(column, na.rm = TRUE))^2, na.rm = TRUE) # Total sum of squares
+  
+  return(1-(RSS/TSS)) # R squared
+  
+  
+}
+
+rsq_1 <- r_squared(exp_model1, df_avg_23_24$FC_night)
+rsq_2 <- r_squared(exp_model2, df_avg_23_24$FC_night)
+rsq_3 <- r_squared(exp_model3, df_avg_23_24$FC_night)
+
+
+
+#Full Year
+rsq_co2 <- r_squared(exp_model1, df_avg_23_24$FC_night)
+rsq_ch4 <- r_squared(exp_model_ch4, df_avg_23_24$FCH4)
+
+# #No Spring
+# rsq_co2_ns <- r_squared(exp_model_ns, df_nospring$FC_night)
+# rsq_ch4_ns <- r_squared(exp_model_ch4_ns, df_nospring$FCH4)
+
+
+```
+
+### Plots
+
+
+Plots flux variables vs. 5cm soil temp to visualize temperature/co2 flux relationship
+
+Temp relationship plots with daily averages
+
+```{r}
+#Both Years CO2
+
+co2model <- ggplot(data=df_avg_23_24)+
+  theme_bw()+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  geom_point(aes(x=SWC_1_1_1, y=FC_night, col = DOY, shape = factor(year)))+
+  geom_line(aes(x = SWC_1_1_1, y = predicted1))+
+  scale_color_gradient(low = "navy", high = "salmon")+
+  labs(
+    x = expression(""),
+    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
+    title = expression("Nighttime CO"[2] * " Flux vs. SWC"))+
+  scale_shape_manual(name = "Year", values = c(16, 17))+
+  #scale_x_continuous(limits=c(-11,14))+
+  scale_y_continuous(limits=c(-0.5,2.5))+
+theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
+  axis.title = element_text(size = 14),legend.position = 'none')+
+  annotate("text", 
+           x = -Inf, y = Inf, 
+           hjust = -0.1, vjust = 1.3,
+           label = paste0("R² = ", round(rsq_1, 2)),
+           size = 5)
+
+co2model
+
+
+
+
+ch4model <- ggplot(data=df_avg_23_24)+
+  theme_bw()+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  geom_point(aes(x=SWC_1_1_1, y=FCH4*(1/1000), col = DOY, shape = factor(year)))+
+  geom_line(aes(x = SWC_1_1_1, y = predicted_ch4*(1/1000)))+
+  scale_color_gradient(low = "navy", high = "salmon")+
+  labs(
+    x = expression(""),
+    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
+    title = expression("Nighttime CO"[2] * " Flux vs. SWC"))+
+  scale_shape_manual(name = "Year", values = c(16, 17))+
+  #scale_x_continuous(limits=c(-11,14))+
+  scale_y_continuous(limits=c(-0.02,0.1))+
+theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
+  axis.title = element_text(size = 14),legend.position = 'none')+
+  annotate("text", 
+           x = -Inf, y = Inf, 
+           hjust = -0.1, vjust = 1.3,
+           label = paste0("R² = ", round(rsq_1, 2)),
+           size = 5)
+
+ch4model
+
+```
+
+
+
+
