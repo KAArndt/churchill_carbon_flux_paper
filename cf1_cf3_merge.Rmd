@@ -14,8 +14,6 @@ knitr::opts_knit$set(root.dir = 'C:/Users/dtrangmoe/Documents/github/churchill_c
 ```
 
 
-
-
 # Load Data
 
 ### CA CF3 Partitioned Data
