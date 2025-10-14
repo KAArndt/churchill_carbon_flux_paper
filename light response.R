@@ -6,23 +6,24 @@ library(openair)
 library(bigleaf)
 library(dplyr)
 
-df = fread('./AMF_CA-CF3_BASE_HH_1-5.csv',na.strings = c('-9999'))
+av = fread('./bothyears_HH.csv')
 
-df$date = as.POSIXct(x = as.character(df$TIMESTAMP_END),format = '%Y%m%d%H%M',tz = 'UTC')
-df = subset(df,df$date > as.POSIXct('2022-07-01'))
+av$date = av$TIMESTAMP
+#df$date = as.POSIXct(x = as.character(df$TIMESTAMP_END),format = '%Y%m%d%H%M',tz = 'UTC')
+#df = subset(df,df$date > as.POSIXct('2022-07-01'))
 
 ############################################################################################
-av = timeAverage(mydata = df,avg.time = '1 day',data.thresh = 50,statistic = 'mean')
+av = timeAverage(mydata = av,avg.time = '1 day',data.thresh = 50,statistic = 'mean')
 gs = subset(av,av$TA > 5 & av$PPFD_IN > 0)
 gs = gs[complete.cases(gs$PPFD_IN),]
 gs = gs[complete.cases(gs$FC),]
 
 # growing season control based on light response curve #######################
-gs = subset(df,df$TS_3_3_1 > 10 & df$PPFD_IN > 1)
+#gs = subset(df,df$TS_3_3_1 > 10 & df$PPFD_IN > 1)
 gs = gs[complete.cases(gs$PPFD_IN),]
 gs = gs[complete.cases(gs$FC),]
 
-lr = light.response(data = gs,NEE = 'FC',Reco = 'RECO_PI',PPFD = 'PPFD_IN',PPFD_ref = 1500)
+lr = light.response(data = gs,NEE = 'FC',Reco = 'RECO',PPFD = 'PPFD_IN',PPFD_ref = 1500)
 
 fit = lr$m$fitted()
 

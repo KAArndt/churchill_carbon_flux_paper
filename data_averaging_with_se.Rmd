@@ -41,20 +41,23 @@ df_avg_biomet <- df_avg_23_24 %>%
     tsoil5 = round(mean(TS_2_05_1, na.rm = TRUE), 2),
     swc = round(mean(SWC_1_1_1, na.rm = TRUE), 2),
     ws = round(mean(WS, na.rm = TRUE), 2),
+    ch4 = round(mean(FCH4, na.rm = TRUE), 2),
     nee.se = round(std.error(FC, na.rm = TRUE), 2),
     tair.se = round(std.error(TA, na.rm = TRUE), 2),
     tsoil5.se = round(std.error(TS_2_05_1, na.rm = TRUE), 2),
     swc.se = round(std.error(SWC_1_1_1, na.rm = TRUE), 2),
-    ws.se = round(std.error(WS, na.rm = TRUE), 2)
+    ws.se = round(std.error(WS, na.rm = TRUE), 2),
+    ch4.se = round(std.error(FCH4, na.rm = TRUE), 2)
     ) %>%
   mutate(
     nee_with_se = paste0(nee, " ± ", nee.se),  # Combine value and SE
     tair_with_se = paste0(tair, " ± ", tair.se),
     tsoil5_with_se = paste0(tsoil5, " ± ", tsoil5.se),
   swc_with_se = paste0(swc, " ± ", swc.se),
-  ws_with_se = paste0(ws, " ± ", ws.se)
+  ws_with_se = paste0(ws, " ± ", ws.se),
+  fch4_with_se = paste0(ch4, " ± ", ch4.se)
   )%>%
-  select(season, nee_with_se, tair_with_se, tsoil5_with_se, swc_with_se, ws_with_se) %>%
+  select(season, nee_with_se, tair_with_se, tsoil5_with_se, swc_with_se, ws_with_se, fch4_with_se) %>%
     arrange(factor(season, levels = c("Fall Senescence 2022", "Winter 2022", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2023", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024")))
 
 
