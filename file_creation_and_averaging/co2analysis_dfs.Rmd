@@ -204,18 +204,14 @@ df_avg_23_24_25 <- df_avg_23_24_25 %>%
 ## For two year budget, broken up at end of fall y1
 
 df_y1 <- subset(df_23_24_25, (df_23_24_25$full_year == 1))
-
 df_avg_y1 <- subset(df_avg_23_24_25, (df_avg_23_24_25$full_year == 1))
 
 
-
 df_y2 <- subset(df_23_24_25, (df_23_24_25$full_year == 2))
-
 df_avg_y2 <- subset(df_avg_23_24_25, (df_avg_23_24_25$full_year == 2))
 
 
 df_y3 <- subset(df_23_24_25, (df_23_24_25$full_year == 3))
-
 df_avg_y3 <- subset(df_avg_23_24_25, (df_avg_23_24_25$full_year == 3))
 ```
 
