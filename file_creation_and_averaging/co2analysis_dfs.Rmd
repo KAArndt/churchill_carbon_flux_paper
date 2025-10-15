@@ -150,9 +150,9 @@ df_23_24_25 <- df_23_24_25 %>%
       
       (date >= as.POSIXct("2024-10-19") & date <= as.POSIXct("2025-05-21"))~ 'Winter 2025',
       
-      (date >= as.POSIXct("2024-05-22") & date <= as.POSIXct("2024-06-16")) ~ 'Snow Melt 2025',
+      (date >= as.POSIXct("2025-05-22") & date <= as.POSIXct("2025-06-16")) ~ 'Snow Melt 2025',
 
-      (date >= as.POSIXct("2024-06-17")) ~ 'Growing Season 2025',
+      (date >= as.POSIXct("2025-06-17")) ~ 'Growing Season 2025',
       TRUE ~ NA_character_
     )
   )
@@ -174,25 +174,49 @@ df_23_24_25 <- df_23_24_25 %>%
   )
 ```
 
+Creates year number to group even years together
+```{r}
 
-#Breaks dataframes up into two year-long dataframes, each containing a full seasonal cycle 
+df_23_24_25 <- df_23_24_25 %>%
+  mutate(
+    full_year = case_when(
+      (season %in% c('Fall Senescence 2022', 'Winter 2023', 'Snow Melt 2023', 'Growing Season 2023') ~ 1),
+      (season %in% c('Fall Senescence 2023','Winter 2024','Snow Melt 2024','Growing Season 2024') ~ 2),
+      (season %in% c('Fall Senescence 2024','Winter 2025','Snow Melt 2025','Growing Season 2025') ~ 3)
+    )
+  )
+
+df_avg_23_24_25 <- df_avg_23_24_25 %>%
+  mutate(
+    full_year = case_when(
+      (season %in% c('Fall Senescence 2022', 'Winter 2023', 'Snow Melt 2023', 'Growing Season 2023') ~ 1),
+      (season %in% c('Fall Senescence 2023','Winter 2024','Snow Melt 2024','Growing Season 2024') ~ 2),
+      (season %in% c('Fall Senescence 2024','Winter 2025','Snow Melt 2025','Growing Season 2025') ~ 3)
+    )
+  )
+
+
+```
+
+
+#Breaks dataframes up into three year-long dataframes, each containing a full seasonal cycle 
 ```{r}
 ## For two year budget, broken up at end of fall y1
 
-df_y1 <- subset(df_23_24_25, (df_23_24_25$TIMESTAMP < as.POSIXct("2023-09-05 00:00")))
+df_y1 <- subset(df_23_24_25, (df_23_24_25$full_year == 1))
 
-df_avg_y1 <- subset(df_avg_23_24_25, (df_avg_23_24_25$date < as.POSIXct("2023-09-05")))
-
-
-
-df_y2 <- subset(df_23_24_25, ((df_23_24_25$TIMESTAMP >= as.POSIXct("2023-09-06 00:00")) & (df_23_24_25$TIMESTAMP < as.POSIXct("2024-09-12 00:00"))))
-
-df_avg_y2 <- subset(df_avg_23_24_25, ((df_avg_23_24_25$date >= as.POSIXct("2023-09-06")) & (df_avg_23_24_25$date < as.POSIXct("2024-09-12"))))
+df_avg_y1 <- subset(df_avg_23_24_25, (df_avg_23_24_25$full_year == 1))
 
 
-df_y3 <- subset(df_23_24_25, (df_23_24_25$TIMESTAMP >= as.POSIXct("2024-09-13 00:00")))
 
-df_avg_y3 <- subset(df_avg_23_24_25, (df_avg_23_24_25$date >= as.POSIXct("2024-09-13")))
+df_y2 <- subset(df_23_24_25, (df_23_24_25$full_year == 2))
+
+df_avg_y2 <- subset(df_avg_23_24_25, (df_avg_23_24_25$full_year == 2))
+
+
+df_y3 <- subset(df_23_24_25, (df_23_24_25$full_year == 3))
+
+df_avg_y3 <- subset(df_avg_23_24_25, (df_avg_23_24_25$full_year == 3))
 ```
 
 
