@@ -22,8 +22,8 @@ library(patchwork)
 Load Dataframe
 ```{r}
 
-df_avg_23_24 <- fread('./bothyears_daily_avg.csv')
-df_23_24 <- fread("./bothyears_HH.csv")
+df_avg_23_24 <- fread('./output_files/three_years_daily_avg.csv')
+df_23_24 <- fread("./output_files/three_years_HH.csv")
 
 ```
 
@@ -33,34 +33,48 @@ Timeseries of GPP, ER, NEE, and CH4
 
 ```{r}
 
-carbonts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
+carbonts <- ggplot(data = df_avg_23_24, aes(x=date))+
   theme_bw()+
-  geom_line(aes(y = -GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
-  geom_line(aes(y = RECO*60*60*24*(1/1000000)*12, color = "Respiration")) +
-  geom_point(aes(y = FC_F*60*60*24*(1/1000000)*12, color = "Carbon Flux", shape = "Gapfilled"))+
-  geom_point(aes(y = FCH4_F*60*60*24*(1/1000000000)*12*13, color = "Methane Flux", shape = "Gapfilled"))+  
-  geom_point(aes(y = FC*60*60*24*(1/1000000)*12, color = "Carbon Flux", shape = "Measured"))+
-  geom_point(aes(y = FCH4*60*60*24*(1/1000000000)*12*13, color = "Methane Flux", shape = "Measured"))+
+  geom_line(aes(y = GPP_F*60*60*24*(1/1e6)*12, color = "GPP"))+
+  geom_line(aes(y = RECO*60*60*24*(1/1e6)*12, color = "Respiration")) +
+  geom_point(aes(y = FC_F*60*60*24*(1/1e6)*12, color = "NEE", shape = "Gapfilled"))+
+  geom_point(aes(y = FC*60*60*24*(1/1e6)*12, color = "NEE", shape = "Measured"))+
   geom_hline(yintercept=0, col="black")+
-  scale_y_continuous(limits = c(-3.9, 2.1), expression('CO'[2]*' Flux (gC'~m^-2~d^-1*')'),
-  sec.axis = sec_axis(~ . /13, name = expression('CH'[4]*' Flux (gC'~m^-2~d^-1*')')))+
-  scale_shape_manual(name = " ",
+  scale_y_continuous(limits = c(-3.8, 4), expression('CO'[2]*' Flux (gC'~m^-2~d^-1*')'))+
+  scale_x_date(name = NULL,
+                   breaks = seq(as.Date("2022-12-01"), as.Date("2025-12-01"), by = "6 months"), date_labels = "%b %Y")+
+  scale_shape_manual(name = NULL,
             values = c("Gapfilled" = 1, 
                       "Measured" = 16),
             breaks = c("Gapfilled", "Measured"))+
-  scale_color_manual(name = " ",
-            values = c("GPP" = "navy", 
+  scale_color_manual(name = NULL,
+            values = c("GPP" = "salmon", 
                       "Respiration" = "turquoise3", 
-                      "Carbon Flux" = "salmon", 
-                      "Methane Flux" = "mediumorchid"),
-            breaks = c("Carbon Flux", "Methane Flux",
-              "GPP", "Respiration"))+
-  scale_x_datetime(name = expression(""), limits = as.POSIXct(c('2022-10-16', '2024-10-19')))
+                      "NEE" = "navy"),
+            breaks = c("NEE",
+              "GPP", "Respiration"))
 
 carbonts
 
-png(filename = './carbonts.png',width = 10,height = 3.67,units = 'in',res = 2000)
-carbonts
+methanets <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_point(aes(y = FCH4_F*60*60*24*(1/1e9)*12*13, color = "Methane Flux", shape = "Gapfilled"))+
+  geom_point(aes(y = FCH4*60*60*24*(1/1e9)*12*13, color = "Methane Flux", shape = "Measured"))+
+  geom_hline(yintercept=0, col="black")+
+  scale_y_continuous(limits = c(-0.3, 1.5), expression('CH'[4]*' Flux (gC'~m^-2~d^-1*')'))+
+  scale_x_date(name = NULL,
+                   breaks = seq(as.Date("2022-12-01"), as.Date("2025-12-01"), by = "6 months"),
+                   date_labels = "%b %Y")+
+  scale_shape_manual(name = NULL,
+            values = c("Gapfilled" = 1, 
+                      "Measured" = 16),
+            breaks = c("Gapfilled", "Measured"))+
+  scale_color_manual(name = NULL, values = c("Methane Flux" = "mediumorchid"))
+
+methanets
+
+png(filename = './png/fluxts.png',width = 10,height = 6,units = 'in',res = 2000)
+carbonts/methanets + plot_layout(guides = "collect", axes = "collect")
 dev.off()
 
 ```
@@ -86,7 +100,7 @@ soiltempts <- ggplot(data = df_avg_23_24)+ theme_bw()+
   geom_line(aes(day,TS_2_10_1,color='100 cm'))+
   scale_y_continuous(expression("Soil Temperature ("*degree*"C)"))+
   scale_x_date(name = expression(""), 
-                   breaks = seq(as.Date("2022-10-01"), as.Date("2024-10-01"), by = "3 months"),
+                   breaks = seq(as.Date("2022-10-01"), as.Date("2025-10-01"), by = "3 months"),
                    date_labels = "%b %Y") +
   scale_color_manual(values = c("0 cm" = "darkgreen", "5 cm" = "pink", "10 cm" = "blue", "20 cm" = "orange", "30 cm" = "hotpink", "40 cm" = "tan", "50 cm" = "brown", "60 cm" = "purple", "70 cm" = "cyan", "80 cm" = "magenta", "90 cm" = "yellow", "100 cm" = "gray"),breaks = c("0 cm", "5 cm", "10 cm", "20 cm", "30 cm", "40 cm", "50 cm", "60 cm", "70 cm", "80 cm", "90 cm", "100 cm"), guide = guide_legend(title = NULL))
 
@@ -99,7 +113,7 @@ soiltempts <- ggplot(data = df_avg_23_24)+ theme_bw()+
 # Winter Timeseries
 ```{r}
 
-df_avg_winter <- df_avg_23_24[df_avg_23_24$season %in% c("Winter 2024", "Winter 2023"), ]
+df_avg_winter <- df_avg_23_24[df_avg_23_24$season %in% c("Winter 2025", "Winter 2024", "Winter 2023"), ]
 
 df_avg_winter$D_SNOW[19] <- NA
 
@@ -133,22 +147,24 @@ first_of_month <- data.frame(
   Label = c("Jan 1", "Feb 1", "Mar 1", "Apr 1", "May 1", "Jun 1", "Jul 1", "Aug 1", "Sep 1", "Oct 1", "Nov 1", "Dec 1")
 )
 
-df_avg_winter$year <- as.factor(df_avg_winter$year)
+df_avg_winter$season_year <- as.factor(df_avg_winter$season_year)
 
 df_avg_winter$airdiff <- df_avg_winter$TA-df_avg_winter$TS_2_05_1
 
 #needs axis labels for dashed-dotted line
 winterts <- ggplot(data = df_avg_winter)+
   theme_bw()+
-  geom_line(aes(x = DOW, y = TS_2_05_1, color = year, linetype = "Soil Temp"))+
-  geom_line(aes(x = DOW, y = TA, color = year, linetype = "Air Temp"))+
+  geom_hline(aes(yintercept = 0))+
+  geom_line(aes(x = DOW, y = TS_2_05_1, color = season_year, linetype = "Soil Temp"))+
+  geom_line(aes(x = DOW, y = TA, color = season_year, linetype = "Air Temp"))+
   scale_x_continuous(limits = c(0, 200),
     breaks = first_of_month$DOW,
     labels = first_of_month$Label)+ 
   scale_color_manual(name = " ",
-            values = c("2024" = "salmon",
+            values = c("2025" = "navy",
+                      "2024" = "salmon",
                       "2023" = "turquoise3"),
-            breaks = c("2023", "2024"))+
+            breaks = c("2023", "2024", "2025"))+
   scale_linetype_manual(name = " ",
                         values = c("Soil Temp" = "solid",
                           "Air Temp"="twodash"))+
@@ -177,14 +193,15 @@ winterts
 
 wintersd <- ggplot(data = df_avg_winter)+
   theme_bw()+
-  geom_line(aes(x = DOW, y = D_SNOW, color = year), show.legend = FALSE)+
+  geom_line(aes(x = DOW, y = D_SNOW, color = season_year), show.legend = FALSE)+
   scale_x_continuous(limits = c(0, 200),
     breaks = first_of_month$DOW,
     labels = first_of_month$Label)+     
   scale_color_manual(name = " ",
-            values = c("2024" = "salmon", 
+            values = c("2025" = "navy",
+                      "2024" = "salmon", 
                       "2023" = "turquoise3"),
-            breaks = c("2023", "2024"))+ 
+            breaks = c("2023", "2024", "2025"))+ 
   labs(
     x = expression(" "),
     y = expression("Snow Depth (cm)")
@@ -192,7 +209,7 @@ wintersd <- ggplot(data = df_avg_winter)+
 
 wintersd
 
-png(filename = './winterts.png',width = 8,height = 6,units = 'in',res = 2000)
+png(filename = './png/winterts.png',width = 8,height = 6,units = 'in',res = 2000)
 wintersd / winterts + plot_layout(guides = "collect", axes = "collect")
 dev.off()
 
