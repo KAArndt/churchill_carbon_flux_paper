@@ -9,7 +9,7 @@ library(dplyr)
 library(patchwork)
 
 #load in the CF3 Ameriflux file
-df = fread('./bothyears_HH.csv')
+df = fread('./output_files/three_years_HH.csv')
 
 # #create a "date" column so it works with Time Average
 df$date = df$TIMESTAMP
@@ -48,13 +48,13 @@ gs$lrfit = fit
 
 gs = gs[order(gs$PPFD_IN),]
 
-α = rep(0.016,2682)
-PPFDref = rep(1500,2682)
-GPPref = rep(4.29,2682)
+α = rep(0.016,nrow(gs))
+PPFDref = rep(1500,nrow(gs))
+GPPref = rep(4.29,nrow(gs))
 Reco = gs$RECO
 ppfd = gs$PPFD_IN
 
-line = α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-mean(gs$RECO)
+line = α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-mean(Reco)
 
 mean(gs$RECO)
 #plot the fit data vs the real PAR, NEE relationship
@@ -115,7 +115,7 @@ lm <- ggplot(data = gs,aes(line*-1,FC))+
 lm
 
 
-png(filename = './lrc_smooth.png',width = 10,height = 6.72,units = 'in',res = 2000)
+png(filename = './png/lrc_smooth.png',width = 10,height = 6.72,units = 'in',res = 2000)
 lrc
 dev.off()
 

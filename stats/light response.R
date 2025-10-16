@@ -6,7 +6,7 @@ library(openair)
 library(bigleaf)
 library(dplyr)
 
-av = fread('./bothyears_HH.csv')
+av = fread('./output_files/three_years_HH.csv')
 
 av$date = av$TIMESTAMP
 #df$date = as.POSIXct(x = as.character(df$TIMESTAMP_END),format = '%Y%m%d%H%M',tz = 'UTC')
