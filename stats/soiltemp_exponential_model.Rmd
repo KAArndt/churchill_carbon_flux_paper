@@ -23,7 +23,7 @@ library(patchwork)
 
 ```{r}
 
-df_avg_23_24 <- fread('./bothyears_daily_avg.csv')
+df_avg_23_24 <- fread('./output_files/three_years_daily_avg.csv')
 
 
 #dataframe with spring removed
@@ -119,14 +119,14 @@ co2model <- ggplot(data=df_avg_23_24)+
   theme_bw()+
   geom_hline(yintercept = 0)+
   geom_vline(xintercept = 0)+
-  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, shape = factor(year)))+
+  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, shape = factor(season_year)))+
   geom_line(aes(x = TS_1_0_1, y = predicted))+
   scale_color_gradient(low = "navy", high = "salmon")+
   labs(
     x = expression(""),
-    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
-    title = expression("Nighttime CO"[2] * " Flux vs. Soil Temperature"))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
+    y = expression("Half-hourly NEE ("*mu*mol~m^-2~s^-1*")"),
+    title = expression("Nighttime NEE vs. Soil Temperature"))+
+  #scale_shape_manual(name = "Year", values = c(15, 16, 17, 18))+
   scale_x_continuous(limits=c(-11,14))+
   scale_y_continuous(limits=c(-0.5,2.5))+
 theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10), 
@@ -152,15 +152,16 @@ co2model_ngs <- ggplot(data=df_nogs)+
   theme_bw()+
   geom_hline(yintercept = 0)+
   geom_vline(xintercept = 0)+
-  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, shape = factor(year)))+
+  geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, #shape = factor(season_year)
+                 ))+
   geom_line(aes(x = TS_1_0_1, y = predicted))+
   scale_color_gradient(low = "navy", high = "salmon")+
   labs(
     x = expression("5cm Soil Temperature ("*degree*"C)"),
-    y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
-    title = expression("CO"[2] * " Flux vs. Soil Temperature"),
+    y = expression("Half-hourly NEE ( "*mu*mol~m^-2~s^-1*")"),
+    title = expression("NEE vs. Soil Temperature"),
     subtitle = expression("Growing season data removed"))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
+ # scale_shape_manual(name = "Year", values = c(16, 17))+
   scale_x_continuous(limits=c(-11,14))+
   scale_y_continuous(limits=c(-0.5,2.5))+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
@@ -181,7 +182,9 @@ co2model_ngs
 ch4model <- ggplot(data=df_avg_23_24)+
   geom_vline(xintercept=0)+
   theme_bw()+
-  geom_point(aes(x=TS_1_0_1, y=FCH4*(1/1000), col = DOY,  shape = factor(year)))+
+  geom_point(aes(x=TS_1_0_1, y=FCH4*(1/1000), col = DOY,  
+                 #shape = factor(year)
+                 ))+
   geom_line(aes(x = TS_1_0_1, y = predicted_ch4*(1/1000)))+
 scale_color_gradient(low = "navy", high = "salmon")+
   labs(
@@ -192,7 +195,7 @@ scale_color_gradient(low = "navy", high = "salmon")+
   )+
   scale_x_continuous(limits = c(-11, 14))+
   scale_y_continuous(limits = c(-0.02, .10))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
+  #scale_shape_manual(name = "Year", values = c(15, 16, 17, 18))+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
   axis.title = element_text(size = 14),
   plot.subtitle = element_text(size = 12, face = "italic"))+
@@ -209,7 +212,7 @@ ch4model
 
 
 
-png(filename = './modelgrid_nogsco2.png',width = 12,height = 6,units = 'in',res = 2000)
+png(filename = './png/modelgrid_nogsco2.png',width = 12,height = 6,units = 'in',res = 2000)
 co2model_ngs + ch4model + plot_layout(guides = "collect")
 dev.off()
 
