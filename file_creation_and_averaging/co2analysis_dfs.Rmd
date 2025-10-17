@@ -117,9 +117,9 @@ df_avg_23_24_25 <- df_avg_23_24_25 %>%
       
       (date >= as.POSIXct("2024-10-19") & date <= as.POSIXct("2025-05-21"))~ 'Winter 2025',
       
-      (date >= as.POSIXct("2024-05-22") & date <= as.POSIXct("2024-06-16")) ~ 'Snow Melt 2025',
+      (date >= as.POSIXct("2025-05-22") & date <= as.POSIXct("2025-06-16")) ~ 'Snow Melt 2025',
 
-      (date >= as.POSIXct("2024-06-17")) ~ 'Growing Season 2025',
+      (date >= as.POSIXct("2025-06-17")) ~ 'Growing Season 2025',
       TRUE ~ NA_character_
     )
   )
