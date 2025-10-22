@@ -27,7 +27,7 @@ library(patchwork)
 Load Dataframe
 ```{r}
 
-df_avg_23_24 <- fread('./bothyears_daily_avg.csv')
+df_avg_23_24 <- fread('./output_files/three_years_daily_avg.csv')
 
 ```
 
@@ -37,52 +37,61 @@ GPP Onset date
 Method derived from parazoo 2018 - first day where GPP is above 10% of max value for 3 consecultive days
 ```{r}
 
-max_gpp_2023 <- max(df_avg_23_24$GPP_F[df_avg_23_24$year == 2023], na.rm = TRUE)
+max_gpp_2023 <- max(df_avg_23_24$GPP_F[df_avg_23_24$season_year == 2023], na.rm = TRUE)
+max_gpp_2024 <- max(df_avg_23_24$GPP_F[df_avg_23_24$season_year == 2024], na.rm = TRUE)
+max_gpp_2025 <- max(df_avg_23_24$GPP_F[df_avg_23_24$season_year == 2025], na.rm = TRUE)
 
-max_gpp_2024 <- max(df_avg_23_24$GPP_F[df_avg_23_24$year == 2024], na.rm = TRUE)
-
-max_reco_2023 <- max(df_avg_23_24$RECO[df_avg_23_24$year == 2023], na.rm = TRUE)
-
-max_reco_2024 <- max(df_avg_23_24$RECO[df_avg_23_24$year == 2024], na.rm = TRUE)
+max_reco_2023 <- max(df_avg_23_24$RECO[df_avg_23_24$season_year == 2023], na.rm = TRUE)
+max_reco_2024 <- max(df_avg_23_24$RECO[df_avg_23_24$season_year == 2024], na.rm = TRUE)
+max_reco_2025 <- max(df_avg_23_24$RECO[df_avg_23_24$season_year == 2025], na.rm = TRUE)
 
 
 shade_data_23 <- data.frame(
-  xmin = as.POSIXct("2023-05-04"),
-  xmax = as.POSIXct("2023-06-11"),
+  xmin = as.Date("2023-05-04"),
+  xmax = as.Date("2023-06-11"),
   ymin = -Inf,
   ymax = Inf,
-  label = "Snow Melt"
+  label = "Spring Thaw"
 )
 
 shade_data_24 <- data.frame(
-  xmin = as.POSIXct("2024-05-14"),
-  xmax = as.POSIXct("2024-06-17"),
+  xmin = as.Date("2024-05-14"),
+  xmax = as.Date("2024-06-17"),
   ymin = -Inf,
   ymax = Inf,
-  label = "Snow Melt"
+  label = "Spring Thaw"
+)
+
+shade_data_25 <- data.frame(
+  xmin = as.Date("2025-05-22"),
+  xmax = as.Date("2025-06-17"),
+  ymin = -Inf,
+  ymax = Inf,
+  label = "Spring Thaw"
 )
 
 
 
 
-onset23ts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
+onset23ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   theme_bw()+
   geom_rect(data = shade_data_23, 
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Snow Melt"),
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
             alpha = 0.2, inherit.aes = FALSE)+
   geom_point(aes(y = -GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
   geom_point(aes(y = RECO*60*60*24*(1/1000000)*12, color = "RECO")) +
   geom_line(aes(y = FC_F*60*60*24*(1/1000000)*12, color = "NEE"))+
-  geom_line(aes(y = TS_1_0_1*(1/6), color = "Soil Temp"))+
+  # geom_line(aes(y = TS_1_0_1*(1/6), color = "Soil Temp"))+
   geom_hline(yintercept=0, col="black")+
   # geom_hline(yintercept=-max_gpp_2023*0.1, col="darkgreen", linetype = "dashed")+
   # geom_hline(yintercept=max_reco_2023*0.1, col="darkgreen", linetype = "dashed")+
-  # geom_vline(xintercept = as.POSIXct("2023-05-04"))+
-  # geom_vline(xintercept = as.POSIXct("2023-06-11"))+
-  geom_vline(aes(xintercept = as.POSIXct("2023-05-30"), linetype = "GPP Onset"))+
-  geom_vline(aes(xintercept = as.POSIXct("2023-05-08"), linetype = "RECO Onset"))+
-  scale_y_continuous(limits = c(-4, 2.5), expression('CO'[2]*' Flux (g C'~m^-2~d^-1*')'),
-  sec.axis = sec_axis(~ . *6, name = expression('Soil Temp ('*degree*'C)')))+
+  # geom_vline(xintercept = as.Date("2023-05-04"))+
+  # geom_vline(xintercept = as.Date("2023-06-11"))+
+  geom_vline(aes(xintercept = as.Date("2023-05-30"), linetype = "GPP Onset"))+
+  geom_vline(aes(xintercept = as.Date("2023-05-08"), linetype = "RECO Onset"))+
+  scale_y_continuous(limits = c(-2, 2), expression('CO'[2]*' Flux (g C'~m^-2~d^-1*')')
+                    # ,sec.axis = sec_axis(~ . *6, name = expression('Soil Temp ('*degree*'C)'))
+                     )+
   scale_color_manual(name = " ",
             values = c("GPP" = "navy", 
                       "RECO" = "turquoise3", 
@@ -90,33 +99,34 @@ onset23ts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
                       "Soil Temp" = "mediumorchid"),
             breaks = c("GPP", "RECO", 
               "NEE", "Soil Temp")) +
-  scale_fill_manual(name = "", values = c("Snow Melt" = "gray")) +
+  scale_fill_manual(name = "", values = c("Spring Thaw" = "gray")) +
   scale_linetype_manual(name = "", values = c("RECO Onset" = "dashed", "GPP Onset"= "dotted"))+
   labs(
     title = expression("2023")
   ) +
-  scale_x_datetime(name = expression(""), limits = as.POSIXct(c('2023-04-20', '2023-07-05')))
+  scale_x_date(name = expression(""), limits = as.Date(c('2023-04-27', '2023-07-01')))
 
 onset23ts
 
-onset24ts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
+onset24ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   theme_bw()+
   geom_rect(data = shade_data_24, 
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Snow Melt"),
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
             alpha = 0.2, inherit.aes = FALSE)+
   geom_point(aes(y = -GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
   geom_point(aes(y = RECO*60*60*24*(1/1000000)*12, color = "RECO")) +
   geom_line(aes(y = FC_F*60*60*24*(1/1000000)*12, color = "NEE"))+
-  geom_line(aes(y = TS_1_0_1*(1/6), color = "Soil Temp"))+
+  # geom_line(aes(y = TS_1_0_1*(1/6), color = "Soil Temp"))+
   geom_hline(yintercept=0, col="black")+
   # geom_hline(yintercept=-max_gpp_2024*0.1, col="darkgreen", linetype = "dashed")+
   # geom_hline(yintercept=max_reco_2024*0.1, col="darkgreen", linetype = "dashed")+
-  # geom_vline(xintercept = as.POSIXct("2024-05-14"))+
-  # geom_vline(xintercept = as.POSIXct("2024-06-17"))+
-  geom_vline(aes(xintercept = as.POSIXct("2024-06-15"), linetype = "GPP Onset"))+
-  geom_vline(aes(xintercept = as.POSIXct("2024-05-25"), linetype = "RECO Onset"))+
-  scale_y_continuous(limits = c(-4, 2.5), expression('CO'[2]*' Flux (g C'~m^-2~d^-1*')'),
-  sec.axis = sec_axis(~ .*6, name = expression('Soil Temp ('*degree*'C)')))+
+  # geom_vline(xintercept = as.Date("2024-05-14"))+
+  # geom_vline(xintercept = as.Date("2024-06-17"))+
+  geom_vline(aes(xintercept = as.Date("2024-06-15"), linetype = "GPP Onset"))+
+  geom_vline(aes(xintercept = as.Date("2024-05-25"), linetype = "RECO Onset"))+
+  scale_y_continuous(limits = c(-2, 2), expression('CO'[2]*' Flux (g C'~m^-2~d^-1*')')
+                  #   , sec.axis = sec_axis(~ .*6, name = expression('Soil Temp ('*degree*'C)'))
+                     )+
   scale_color_manual(name = " ",
             values = c("GPP" = "navy", 
                       "RECO" = "turquoise3", 
@@ -124,19 +134,52 @@ onset24ts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
                       "Soil Temp" = "mediumorchid"),
             breaks = c("GPP", "RECO", 
               "NEE", "Soil Temp")) +
-  scale_fill_manual(name = "", values = c("Snow Melt" = "gray")) +
+  scale_fill_manual(name = "", values = c("Spring Thaw" = "gray")) +
   scale_linetype_manual(name = "", values = c("RECO Onset" = "dashed", "GPP Onset"= "dotted"))+
   labs(
     title = expression("2024")
   ) +
-  scale_x_datetime(name = expression(""), limits = as.POSIXct(c('2024-04-20', '2024-07-05')))
+  scale_x_date(name = expression(""), limits = as.Date(c('2024-04-27', '2024-07-01')))
 
 onset24ts
 
+onset25ts <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_rect(data = shade_data_25, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  geom_point(aes(y = -GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
+  geom_point(aes(y = RECO*60*60*24*(1/1000000)*12, color = "RECO")) +
+  geom_line(aes(y = FC_F*60*60*24*(1/1000000)*12, color = "NEE"))+
+  # geom_line(aes(y = TS_1_0_1*(1/6), color = "Soil Temp"))+
+  geom_hline(yintercept=0, col="black")+
+  # geom_hline(yintercept=-max_gpp_2025*0.1, col="darkgreen", linetype = "dashed")+
+  # geom_hline(yintercept=max_reco_2025*0.1, col="darkgreen", linetype = "dashed")+
+  geom_vline(aes(xintercept = as.Date("2025-06-17"), linetype = "GPP Onset"))+
+  geom_vline(aes(xintercept = as.Date("2025-05-23"), linetype = "RECO Onset"))+
+  scale_y_continuous(limits = c(-2, 2), expression('CO'[2]*' Flux (g C'~m^-2~d^-1*')')
+                  #   ,sec.axis = sec_axis(~ .*6, name = expression('Soil Temp ('*degree*'C)'))
+                     )+
+  scale_color_manual(name = " ",
+            values = c("GPP" = "navy", 
+                      "RECO" = "turquoise3", 
+                      "NEE" = "salmon", 
+                      "Soil Temp" = "mediumorchid"),
+            breaks = c("GPP", "RECO", 
+              "NEE", "Soil Temp")) +
+  scale_fill_manual(name = "", values = c("Spring Thaw" = "gray")) +
+  scale_linetype_manual(name = "", values = c("RECO Onset" = "dashed", "GPP Onset"= "dotted"))+
+  labs(
+    title = expression("2025")
+  ) +
+  scale_x_date(name = expression(""), limits = as.Date(c('2025-04-27', '2025-07-01')))
 
-png(filename = './gpponsetts.png',width = 11,height = 6,units = 'in',res = 2000)
-onset23ts / onset24ts + plot_layout(guides = "collect")
-dev.off()
+onset25ts
+
+
+# png(filename = './png/gpponsetts.png',width = 11,height = 6,units = 'in',res = 2000)
+# onset23ts / onset24ts / onset25ts + plot_layout(guides = "collect", axis_titles = "collect")
+# dev.off()
 
 
 
@@ -150,17 +193,17 @@ Methane Spring Plots
 
 
 
-springch423ts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
+springch423ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   theme_bw()+
   geom_rect(data = shade_data_23, 
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Snow Melt"),
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
             alpha = 0.2, inherit.aes = FALSE)+
   geom_point(aes(y = FCH4_F*60*60*24*(1/1000000000)*12, color = "Methane Flux"))+
-  geom_line(aes(y = TA * (1/250), color = "Air Temp"))+
+  # geom_line(aes(y = TA * (1/250), color = "Air Temp"))+
   geom_line(aes(y = TS_1_0_1*(1/250), color = "Soil Temp"))+
   geom_hline(yintercept=0, col="black")+
-  # geom_vline(xintercept = as.POSIXct("2023-05-04"), linewidth = 0.1)+ #snow melt start 
-  # geom_vline(xintercept = as.POSIXct("2023-06-11"), linewidth = 0.1)+ #snow melt end 
+  # geom_vline(xintercept = as.Date("2023-05-04"), linewidth = 0.1)+ #Spring Thaw start 
+  # geom_vline(xintercept = as.Date("2023-06-11"), linewidth = 0.1)+ #Spring Thaw end 
   scale_y_continuous(limits = c(-0.02, 0.11), expression('CH'[4]*' Flux (g CH'[4]*'-C'~m^-2~d^-1*')'),
   sec.axis = sec_axis(~ . *250, name = expression('Temperature ('*degree*'C)')))+
   scale_color_manual(name = " ",
@@ -169,28 +212,28 @@ springch423ts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
                       "Soil Temp" = "navy"),
             breaks = c("Methane Flux", 
               "Air Temp", "Soil Temp")) +  
-  scale_fill_manual(values = c("Snow Melt" = "gray")) +
+  scale_fill_manual(values = c("Spring Thaw" = "gray")) +
   guides(fill = guide_legend(title = NULL)) +
   labs(
     title = expression("2023")
   ) +
-  scale_x_datetime(name = expression(""), limits = as.POSIXct(c('2023-04-20', '2023-07-05')))
+  scale_x_date(name = expression(""), limits = as.Date(c('2023-04-27', '2023-07-01')))
 
 springch423ts
 
 
 
-springch424ts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
+springch424ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   theme_bw()+
   geom_rect(data = shade_data_24, 
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Snow Melt"),
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
             alpha = 0.2, inherit.aes = FALSE) +
   geom_point(aes(y = FCH4_F*60*60*24*(1/1e9)*12, color = "Methane Flux"))+
-  geom_line(aes(y = TA * (1/250), color = "Air Temp"))+
+  # geom_line(aes(y = TA * (1/250), color = "Air Temp"))+
   geom_line(aes(y = TS_1_0_1*(1/250), color = "Soil Temp"))+
   geom_hline(yintercept=0, col="black")+
-  # geom_vline(xintercept = as.POSIXct("2024-05-14"), linewidth = 0.1)+
-  # geom_vline(xintercept = as.POSIXct("2024-06-17"), linewidth = 0.1)+
+  # geom_vline(xintercept = as.Date("2024-05-14"), linewidth = 0.1)+
+  # geom_vline(xintercept = as.Date("2024-06-17"), linewidth = 0.1)+
   scale_y_continuous(limits = c(-0.02, 0.11), expression('CH'[4]*' Flux (g CH'[4]*'-C'~m^-2~d^-1*')'),
   sec.axis = sec_axis(~ .*250, name = expression('Temperature ('*degree*'C)')))+
   scale_color_manual(name = " ",
@@ -199,18 +242,47 @@ springch424ts <- ggplot(data = df_avg_23_24, aes(x=TIMESTAMP))+
                       "Soil Temp" = "navy"),
             breaks = c("Methane Flux", 
               "Air Temp", "Soil Temp")) +
-  scale_fill_manual(values = c("Snow Melt" = "gray")) +
+  scale_fill_manual(values = c("Spring Thaw" = "gray")) +
     guides(fill = guide_legend(title = NULL)) +
   labs(
     title = expression("2024")
   ) + 
-  scale_x_datetime(name = expression(""), limits = as.POSIXct(c('2024-04-20', '2024-07-05')))
+  scale_x_date(name = expression(""), limits = as.Date(c('2024-04-27', '2024-07-01')))
 
 springch424ts
 
-png(filename = './methanespringts.png',width = 11,height = 6,units = 'in',res = 3000)
-springch423ts / springch424ts + plot_layout(guides = "collect")
-dev.off()
+
+springch425ts <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_rect(data = shade_data_25, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE) +
+  geom_point(aes(y = FCH4_F*60*60*24*(1/1e9)*12, color = "Methane Flux"))+
+  # geom_line(aes(y = TA * (1/250), color = "Air Temp"))+
+  geom_line(aes(y = TS_1_0_1*(1/250), color = "Soil Temp"))+
+  geom_hline(yintercept=0, col="black")+
+  # geom_vline(xintercept = as.Date("2025-05-14"), linewidth = 0.1)+
+  # geom_vline(xintercept = as.Date("2025-06-17"), linewidth = 0.1)+
+  scale_y_continuous(limits = c(-0.02, 0.11), expression('CH'[4]*' Flux (g CH'[4]*'-C'~m^-2~d^-1*')'),
+  sec.axis = sec_axis(~ .*250, name = expression('Temperature ('*degree*'C)')))+
+  scale_color_manual(name = " ",
+            values = c("Methane Flux" = "turquoise3", 
+                      "Air Temp" = "salmon", 
+                      "Soil Temp" = "navy"),
+            breaks = c("Methane Flux", 
+              "Air Temp", "Soil Temp")) +
+  scale_fill_manual(values = c("Spring Thaw" = "gray")) +
+    guides(fill = guide_legend(title = NULL)) +
+  labs(
+    title = expression("2025")
+  ) + 
+  scale_x_date(name = expression(""), limits = as.Date(c('2025-04-27', '2025-07-01')))
+
+springch425ts
+
+# png(filename = './png/methanespringts.png',width = 11,height = 6,units = 'in',res = 2000)
+# springch423ts / springch424ts / springch425ts + plot_layout(guides = "collect", axis_titles = "collect")
+# dev.off()
 
 
 
