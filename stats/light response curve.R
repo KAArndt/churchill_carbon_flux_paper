@@ -57,6 +57,7 @@ ppfd = gs$PPFD_IN
 line = α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-mean(Reco)
 
 mean(gs$RECO)
+
 #plot the fit data vs the real PAR, NEE relationship
 lrc <- ggplot(data = gs)+
   theme(
@@ -65,18 +66,20 @@ lrc <- ggplot(data = gs)+
     axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
     axis.title.y = element_text(size = 14),axis.title.x = element_text(size = 14))+
   geom_hline(aes(yintercept = 0),col = 'black')+
-  geom_point(aes(PPFD_IN,FC, col = SWC_2_2_1))+
+  geom_point(aes(PPFD_IN,FC
+                 #, col = full_year
+                 ))+
     geom_line(aes(PPFD_IN,line*-1),col='red')+
-  geom_smooth(formula = y ~ α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-Reco,col='red',aes(PPFD_IN,FC),method = 'lm')+
+  geom_smooth(formula = y ~ α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-Reco,col='red', aes(PPFD_IN,FC),method = 'lm')+
 #  geom_line(aes(PPFD_IN,lrfit*-1),col='red')+
-  scale_color_viridis_c()+
+#  scale_color_viridis_c()+
   annotate("text", 
            x = Inf, y = Inf, 
            hjust = 1.1, vjust = 1.3,
            label = paste0("\u03B1 = ", round(alpha, 3), "\nGPP ref = ", round(GPP_ref, 2)),
            size = 5)+
   labs(
-    y = expression('Half-hourly CO '[2] * ' Flux ('*mu*mol~m^-2~s^-1*')'),
+    y = expression('Half-hourly NEE ('*mu*mol~m^-2~s^-1*')'),
     x = expression('PAR In ('*mu*'mol m'^-2*'s'^-1*')'),
     title = "Light Response Curve - Growing Season Only",
     color = expression("SWC (%)"))
@@ -108,7 +111,7 @@ lm <- ggplot(data = gs,aes(line*-1,FC))+
            label = paste0("R² = ", round(r_sq, 2)),
            size = 5)+
   labs(
-    y = expression('Half-hourly CO '[2] * ' Flux ('*mu*mol~m^-2~s^-1*')'),
+    y = expression('Half-hourly NEE ('*mu*mol~m^-2~s^-1*')'),
     x = expression('Fit * -1'),
     title = "LRC Accuracy - 5cm Soil Temp > 5",
     color = expression("Air T ("*degree*"C)"))
