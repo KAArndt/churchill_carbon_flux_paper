@@ -28,8 +28,11 @@ df_avg_23_24 <- fread('./output_files/three_years_daily_avg.csv')
 
 #dataframe with spring removed
 
-df_nogs <- df_avg_23_24 %>% 
-  filter(TS_1_0_1 > 0)
+df_nogs <- df_avg_23_24 
+
+#convert methane units here so models work
+
+df_nogs$FCH4 <- df_nogs$FCH4 * (1/1000)
 
 #%>%
   #filter(season_name != "Growing Season")
@@ -168,6 +171,8 @@ Two main plots:
 
 ```{r}
 
+label_co2 <- bquote(y == .(round(a_ngs, 2)) * e^{.(round(b_ngs, 2)) * x})
+
 co2model_ngs <- ggplot(data=df_nogs)+
   theme_bw()+
   geom_hline(yintercept = 0)+
@@ -177,7 +182,7 @@ co2model_ngs <- ggplot(data=df_nogs)+
   geom_line(aes(x = TS_1_0_1, y = predicted))+
   scale_color_gradient(low = "navy", high = "salmon")+
   labs(
-    x = expression("5cm Soil Temperature ("*degree*"C)"),
+    x = expression("Surface Soil Temperature ("*degree*"C)"),
     y = expression("Avg. Half-Hourly NEE ( "*mu*mol~m^-2~s^-1*")"),
     title = expression("Nighttime NEE vs. Soil Temperature"))+
  # scale_shape_manual(name = "Year", values = c(16, 17))+
@@ -193,8 +198,8 @@ theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 1
            size = 5)+
   annotate("text", 
            x = -Inf, y = Inf, 
-           hjust = -0.1, vjust = 3,
-           label = paste0("y = ", round(coef_ngs[,a], 2), "e^", round(rsq_co2_ngs, 2), "x"),
+           hjust = -0.1, vjust = 2.2,
+           label = as.expression(label_co2),
            size = 5)
 
 co2model_ngs
@@ -203,16 +208,19 @@ co2model_ngs
 
 #Methane vs. soil temp
 
+label_ch4 <- bquote(y == .(round(a_ch4_ngs, 3)) * e^{.(round(b_ch4_ngs, 3)) * x})
+
 ch4model <- ggplot(data=df_nogs)+
   geom_vline(xintercept=0)+
+  geom_hline(yintercept = 0)+
   theme_bw()+
-  geom_point(aes(x=TS_1_0_1, y=FCH4*(1/1000), col = DOY,  
+  geom_point(aes(x=TS_1_0_1, y=FCH4, col = DOY,  
                  #shape = factor(year)
                  ))+
-  geom_line(aes(x = TS_1_0_1, y = predicted_ch4*(1/1000)))+
+  geom_line(aes(x = TS_1_0_1, y = predicted_ch4))+
 scale_color_gradient(low = "navy", high = "salmon")+
   labs(
-    x = expression("5cm Soil Temperature ("*degree*"C)"),
+    x = expression("Surface Soil Temperature ("*degree*"C)"),
     y = expression("Avg. Half-Hourly CH "[4] * " Flux ("*mu*mol~m^-2~s^-1*")"),
     title = expression("CH"[4] * " Flux vs. Soil Temperature")
   )+
@@ -226,6 +234,11 @@ theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 1
            x = -Inf, y = Inf, 
            hjust = -0.1, vjust = 1.3,
            label = paste0("R² = ", round(rsq_ch4_ngs, 2)),
+           size = 5)+
+  annotate("text", 
+           x = -Inf, y = Inf, 
+           hjust = -0.1, vjust = 2.2,
+           label = as.expression(label_ch4),
            size = 5)
 
 ch4model

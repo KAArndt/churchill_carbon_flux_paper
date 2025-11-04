@@ -23,13 +23,15 @@ library(respirometry)
 
 ```{r}
 
-df_23_24 <- fread('./bothyears_HH.csv')
+df_23_24 <- fread('./output_files/three_years_HH.csv')
 
 
 ```
 
 
 # Temperature sensitivity
+
+## CO2
 
 ```{r}
 
@@ -54,4 +56,30 @@ df_nowinter <- df_23_24 %>%
 q10_fc_air_nowinter <- Q10(R_vec = df_nowinter$FC_night, T_vec = df_nowinter$TA)
 
 ```
+
+## Methane
+
+```{r}
+
+# Full year
+
+q10_fch4_air <- Q10(R_vec = df_23_24$FCH4, T_vec = df_23_24$TA)
+q10_fch4_soil <- Q10(R_vec = df_23_24$FCH4, T_vec = df_23_24$TS_1_0_1)
+
+
+# Only Winter
+df_winter <- df_23_24 %>%
+  filter(season_name == "Winter")
+
+q10_fch4_air_winter <- Q10(R_vec = df_winter$FCH4, T_vec = df_winter$TA)
+
+
+#No Winter
+df_nowinter <- df_23_24 %>%
+  filter(season_name != "Winter")
+
+q10_fch4_air_nowinter <- Q10(R_vec = df_nowinter$FCH4, T_vec = df_nowinter$TA)
+
+```
+
 
