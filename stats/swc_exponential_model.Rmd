@@ -18,22 +18,19 @@ library(gridExtra)
 ```
 
 
-# Load Data 
+# Load data
 
 ```{r}
 
-df_avg_y1 <- fread('./year1_daily_avg.csv')
-df_avg_y2 <- fread('./year2_daily_avg.csv')
-df_avg_23_24 <- fread('./bothyears_daily_avg.csv')
-
-#Creates dataframe with both years of data with one DOY timeseries
-df_merge <- merge(df_avg_y1, df_avg_y2, by = "DOY", suffixes = c(".y1", ".y2"))
-
-#Dataframe with spring removed
+df_avg_23_24 <- fread('./output_files/three_years_daily_avg.csv')
 
 
-df_nospring <- df_avg_23_24 %>%
-  filter(season_name != "Snow Melt")
+#dataframe with spring removed
+
+df_nogs <- df_avg_23_24 %>%
+  #filter(season_name != "Growing Season")%>%
+  filter(SWC_2_2_1 > 70)
+
 
 ```
 
@@ -55,10 +52,19 @@ exp_model2 <- nls(FC_night ~ a * exp(b * SWC_2_1_1), data = df_avg_23_24, start 
 # Generate predicted values
 df_avg_23_24$predicted2 <- predict(exp_model2, newdata = df_avg_23_24)
 
+
+## Best model!
 exp_model3 <- nls(FC_night ~ a * exp(b * SWC_2_2_1), data = df_avg_23_24, start = list(a = 1, b = 0.1))
 
 # Generate predicted values
 df_avg_23_24$predicted3 <- predict(exp_model3, newdata = df_avg_23_24)
+
+
+## Cut out winter
+exp_model3_1 <- nls(FC_night ~ a * exp(b * SWC_2_2_1), data = df_nogs, start = list(a = 1, b = 0.1))
+
+# Generate predicted values
+df_avg_23_24$predicted3_1 <- predict(exp_model3_1, newdata = df_nogs)
 
 
 
@@ -79,25 +85,36 @@ df_avg_23_24$predicted_ch4 <- predict(exp_model_ch4, newdata = df_avg_23_24)
 
 # R squared values
 
-r_squared <- function(model, column) {
-  
-  RSS <- sum(residuals(model)^2) # Residual sum of sqares
-  TSS <- sum((column - mean(column, na.rm = TRUE))^2, na.rm = TRUE) # Total sum of squares
-  
-  return(1-(RSS/TSS)) # R squared
-  
-  
+r_squared <- function(model) {
+
+  # Get residuals (only for data model actually used)
+  resid <- residuals(model)
+
+  # Get fitted values (only for data model actually used)
+  fitted_vals <- fitted(model)
+
+  # Back-calculate observed values (only for data model actually used)
+  observed <- fitted_vals + resid
+
+  # Now RSS and TSS are from the SAME dataset
+  RSS <- sum(resid^2)
+  TSS <- sum((observed - mean(observed))^2)
+
+  R2 <- 1 - (RSS / TSS)
+
+  return(R2)
 }
 
-rsq_1 <- r_squared(exp_model1, df_avg_23_24$FC_night)
-rsq_2 <- r_squared(exp_model2, df_avg_23_24$FC_night)
-rsq_3 <- r_squared(exp_model3, df_avg_23_24$FC_night)
+
+rsq_1 <- r_squared(exp_model1)
+rsq_2 <- r_squared(exp_model2)
+rsq_3 <- r_squared(exp_model3)
 
 
 
 #Full Year
-rsq_co2 <- r_squared(exp_model1, df_avg_23_24$FC_night)
-rsq_ch4 <- r_squared(exp_model_ch4, df_avg_23_24$FCH4)
+rsq_co2 <- r_squared(exp_model1)
+rsq_ch4 <- r_squared(exp_model_ch4)
 
 # #No Spring
 # rsq_co2_ns <- r_squared(exp_model_ns, df_nospring$FC_night)
@@ -120,14 +137,14 @@ co2model <- ggplot(data=df_avg_23_24)+
   theme_bw()+
   geom_hline(yintercept = 0)+
   geom_vline(xintercept = 0)+
-  geom_point(aes(x=SWC_1_1_1, y=FC_night, col = DOY, shape = factor(year)))+
-  geom_line(aes(x = SWC_1_1_1, y = predicted1))+
+  geom_point(aes(x=SWC_2_2_1, y=FC_night, col = DOY, shape = factor(season_year)))+
+  geom_line(aes(x = SWC_2_2_1, y = predicted3))+
   scale_color_gradient(low = "navy", high = "salmon")+
   labs(
     x = expression(""),
     y = expression("Half-hourly CO "[2] * " Flux ("*mu*mol~m^-2~s^-1*")"),
     title = expression("Nighttime CO"[2] * " Flux vs. SWC"))+
-  scale_shape_manual(name = "Year", values = c(16, 17))+
+  scale_shape_manual(name = "Year", values = c(14, 15, 16, 17))+
   #scale_x_continuous(limits=c(-11,14))+
   scale_y_continuous(limits=c(-0.5,2.5))+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 

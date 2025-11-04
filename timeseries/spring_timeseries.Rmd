@@ -78,7 +78,7 @@ onset23ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_rect(data = shade_data_23, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
             alpha = 0.2, inherit.aes = FALSE)+
-  geom_point(aes(y = -GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
+  geom_point(aes(y = GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
   geom_point(aes(y = RECO*60*60*24*(1/1000000)*12, color = "RECO")) +
   geom_line(aes(y = FC_F*60*60*24*(1/1000000)*12, color = "NEE"))+
   # geom_line(aes(y = TS_1_0_1*(1/6), color = "Soil Temp"))+
@@ -113,7 +113,7 @@ onset24ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_rect(data = shade_data_24, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
             alpha = 0.2, inherit.aes = FALSE)+
-  geom_point(aes(y = -GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
+  geom_point(aes(y = GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
   geom_point(aes(y = RECO*60*60*24*(1/1000000)*12, color = "RECO")) +
   geom_line(aes(y = FC_F*60*60*24*(1/1000000)*12, color = "NEE"))+
   # geom_line(aes(y = TS_1_0_1*(1/6), color = "Soil Temp"))+
@@ -148,7 +148,7 @@ onset25ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_rect(data = shade_data_25, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
             alpha = 0.2, inherit.aes = FALSE)+
-  geom_point(aes(y = -GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
+  geom_point(aes(y = GPP_F*60*60*24*(1/1000000)*12, color = "GPP"))+
   geom_point(aes(y = RECO*60*60*24*(1/1000000)*12, color = "RECO")) +
   geom_line(aes(y = FC_F*60*60*24*(1/1000000)*12, color = "NEE"))+
   # geom_line(aes(y = TS_1_0_1*(1/6), color = "Soil Temp"))+
@@ -287,4 +287,102 @@ springch425ts
 
 
 ```
+
+
+
+Spring met data
+```{r}
+
+
+springmetdata23 <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_rect(data = shade_data_23, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  geom_line(aes(y = ALB * (1/4), color = "Albedo"))+
+  geom_line(aes(y = SWC_1_1_1 * (1/4), color = "SWC"))+
+  geom_line(aes(y = TA, color = "Air Temp"))+
+  geom_line(aes(y = TS_1_0_1, color = "Soil Temp"))+
+  geom_hline(yintercept=0, col="black")+
+  scale_y_continuous(limits = c(-15, 23), expression('Temperature ('*degree*'C)'),
+  sec.axis = sec_axis(~ . *4, name = expression('Albedo (%)')))+
+  scale_color_manual(name = " ",
+            values = c("Albedo" = "turquoise3", 
+                      "Air Temp" = "salmon", 
+                      "Soil Temp" = "navy", 
+                      "SWC" = "green3"),
+            breaks = c("Albedo", "SWC",
+              "Air Temp", "Soil Temp")) +  
+  scale_fill_manual(values = c("Spring Thaw" = "gray")) +
+  guides(fill = guide_legend(title = NULL)) +
+  labs(
+    title = expression("2023")
+  ) +
+  scale_x_date(name = expression(""), limits = as.Date(c('2023-04-27', '2023-07-01')))
+
+springmetdata23
+
+
+
+springmetdata24 <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_rect(data = shade_data_24, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE) +
+  geom_line(aes(y = ALB * (1/4), color = "Albedo"))+
+  geom_line(aes(y = TA, color = "Air Temp"))+
+  geom_line(aes(y = TS_1_0_1, color = "Soil Temp"))+
+  geom_hline(yintercept=0, col="black")+
+  scale_y_continuous(limits = c(-15, 23), expression('Temperature ('*degree*'C)'),
+  sec.axis = sec_axis(~ .*4, name = expression('Albedo (%)')))+
+  scale_color_manual(name = " ",
+            values = c("Albedo" = "turquoise3", 
+                      "Air Temp" = "salmon", 
+                      "Soil Temp" = "navy"),
+            breaks = c("Albedo", 
+              "Air Temp", "Soil Temp")) +
+  scale_fill_manual(values = c("Spring Thaw" = "gray")) +
+    guides(fill = guide_legend(title = NULL)) +
+  labs(
+    title = expression("2024")
+  ) + 
+  scale_x_date(name = expression(""), limits = as.Date(c('2024-04-27', '2024-07-01')))
+
+springmetdata24
+
+
+springmetdata25 <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_rect(data = shade_data_25, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE) +
+  geom_line(aes(y = ALB * (1/4), color = "Albedo"))+
+  geom_line(aes(y = TA, color = "Air Temp"))+
+  geom_line(aes(y = TS_1_0_1, color = "Soil Temp"))+
+  geom_hline(yintercept=0, col="black")+
+  scale_y_continuous(limits = c(-15, 23), expression('Temperature ('*degree*'C)'),
+  sec.axis = sec_axis(~ .*(4), name = expression('Albedo (%)')))+
+  scale_color_manual(name = " ",
+            values = c("Albedo" = "turquoise3", 
+                      "Air Temp" = "salmon", 
+                      "Soil Temp" = "navy"),
+            breaks = c("Albedo", 
+              "Air Temp", "Soil Temp")) +
+  scale_fill_manual(values = c("Spring Thaw" = "gray")) +
+    guides(fill = guide_legend(title = NULL)) +
+  labs(
+    title = expression("2025")
+  ) + 
+  scale_x_date(name = expression(""), limits = as.Date(c('2025-04-27', '2025-07-01')))
+
+springmetdata25
+
+
+
+png(filename = './png/metspringts.png',width = 11,height = 6,units = 'in',res = 2000)
+springmetdata23 / springmetdata24 / springmetdata25 + plot_layout(guides = "collect", axis_titles = "collect")
+dev.off()
+
+```
+
 

@@ -16,6 +16,7 @@ library(lubridate)
 library(tidyverse)
 library(gridExtra) 
 library(patchwork)
+library(plotrix) # standard error function
 
 ```
 
@@ -75,9 +76,9 @@ methanets <- ggplot(data = df_avg_23_24, aes(x=date))+
 
 methanets
 
-png(filename = './png/fluxts.png',width = 10,height = 6,units = 'in',res = 2000)
-carbonts/methanets + plot_layout(guides = "collect", axes = "collect")
-dev.off()
+# png(filename = './png/fluxts.png',width = 10,height = 6,units = 'in',res = 2000)
+# carbonts/methanets + plot_layout(guides = "collect", axes = "collect")
+# dev.off()
 
 ```
 
@@ -106,14 +107,19 @@ soiltempts <- ggplot(data = df_avg_23_24)+ theme_bw()+
                    date_labels = "%b %Y") +
   scale_color_manual(values = c("0 cm" = "darkgreen", "5 cm" = "pink", "10 cm" = "blue", "20 cm" = "orange", "30 cm" = "hotpink", "40 cm" = "tan", "50 cm" = "brown", "60 cm" = "purple", "70 cm" = "cyan", "80 cm" = "magenta", "90 cm" = "yellow", "100 cm" = "gray"),breaks = c("0 cm", "5 cm", "10 cm", "20 cm", "30 cm", "40 cm", "50 cm", "60 cm", "70 cm", "80 cm", "90 cm", "100 cm"), guide = guide_legend(title = NULL))
 
-
+# soiltempts
+# 
 # png(filename = './png/soiltempts.png',width = 10.96,height = 3.67,units = 'in',res = 2000)
 # soiltempts
 # dev.off()
 ```
 
 # Winter Timeseries
+
+Create winter dataframe 
 ```{r}
+
+
 
 df_avg_winter <- df_avg_23_24[df_avg_23_24$season %in% c("Winter 2025", "Winter 2024", "Winter 2023"), ]
 
@@ -153,23 +159,107 @@ df_avg_winter$season_year <- as.factor(df_avg_winter$season_year)
 
 df_avg_winter$airdiff <- df_avg_winter$TA-df_avg_winter$TS_2_05_1
 
+```
+
+Create monthly averages of winter data
+
+```{r}
+
+df_avg_winter$month <- month(df_avg_winter$date)
+summary(df_avg_winter$month)
+
+
+df_monthly_avg_winter <- df_avg_winter %>%
+  group_by(month, full_year)%>%
+  summarize(
+    nee = round(mean(FC, na.rm = TRUE), 3),
+    tair = round(mean(TA, na.rm = TRUE), 2),
+    tsoil5 = round(mean(TS_2_05_1, na.rm = TRUE), 2),
+    swc = round(mean(SWC_1_1_1, na.rm = TRUE), 2),
+    ws = round(mean(WS, na.rm = TRUE), 2),
+    ch4 = round(mean(FCH4, na.rm = TRUE), 2), # other variables kept as artifact from old code, maybe add back later
+    nee.se = round(std.error(FC, na.rm = TRUE), 2),
+    tair.se = round(std.error(TA, na.rm = TRUE), 2),
+    tsoil5.se = round(std.error(TS_2_05_1, na.rm = TRUE), 2),
+    swc.se = round(std.error(SWC_1_1_1, na.rm = TRUE), 2),
+    ws.se = round(std.error(WS, na.rm = TRUE), 2),
+    ch4.se = round(std.error(FCH4, na.rm = TRUE), 2)
+    ) %>%
+  select(c(full_year, month, tair, tair.se, tsoil5, tsoil5.se)) %>%
+  pivot_wider(names_from = full_year, values_from = c(tair, tair.se, tsoil5, tsoil5.se))
+
+
+
+tair <- ggplot(data = df_monthly_avg_winter)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank(),
+  legend.position = "none")+
+  geom_line(aes(x = month, y = tair_1, color = "1"))+
+  geom_line(aes(x = month, y = tair_2, color = "2"))+
+  geom_line(aes(x = month, y = tair_3, color = "3"))+
+  geom_point(aes(x = month, y = tair_1, color = "1"))+
+  geom_point(aes(x = month, y = tair_2, color = "2"))+
+  geom_point(aes(x = month, y = tair_3, color = "3"))+
+  geom_errorbar(
+    aes(x = month,
+        ymin = tair_1 - tair.se_1,
+        ymax = tair_1 + tair.se_1,
+        color = "1"),
+    width = 0.3
+  )+
+  geom_errorbar(
+    aes(x = month,
+        ymin = tair_2 - tair.se_2,
+        ymax = tair_2 + tair.se_2,
+        color = "2"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = tair_3 - tair.se_3,
+        ymax = tair_3 + tair.se_3,
+        color = "3"),
+    width = 0.3
+  )+    
+  geom_hline(aes(yintercept = 0, color = "black"))+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('Air Temperature ('*degree*'C)'))+
+  scale_color_manual(name = " ",
+            values = c("1" = "turquoise3", 
+                      "2" = "salmon",
+                      "3" = "navy"),
+            breaks = c("1", "2", "3"))
+```
+
+# Plot
+```{r}
+
+
 #needs axis labels for dashed-dotted line
 winterts <- ggplot(data = df_avg_winter)+
   theme_bw()+
+  guides(
+    color = guide_legend(order = 1),     # appears first (top)
+    linetype = guide_legend(order = 2)   # appears second (below)
+  )+
   geom_hline(aes(yintercept = 0))+
   geom_line(aes(x = DOW, y = TS_2_05_1, color = season_year, linetype = "Soil Temp"))+
-  geom_line(aes(x = DOW, y = TA, color = season_year, linetype = "Air Temp"))+
+  geom_line(aes(x = DOW, y = TA, color = season_year, linetype = "Air Temp"), alpha = 0.4)+
   scale_x_continuous(limits = c(0, 200),
     breaks = first_of_month$DOW,
     labels = first_of_month$Label)+ 
+  scale_linetype_manual(name = " ",
+                        values = c("Soil Temp" = "solid",
+                          "Air Temp"="twodash"))+
   scale_color_manual(name = " ",
             values = c("2025" = "navy",
                       "2024" = "salmon",
                       "2023" = "turquoise3"),
             breaks = c("2023", "2024", "2025"))+
-  scale_linetype_manual(name = " ",
-                        values = c("Soil Temp" = "solid",
-                          "Air Temp"="twodash"))+
   labs(
     x = expression(" "),
     y = expression("Temperature ("*degree*"C)")
@@ -195,6 +285,10 @@ winterts
 
 wintersd <- ggplot(data = df_avg_winter)+
   theme_bw()+
+  guides(
+    color = guide_legend(order = 1),
+    linetype = guide_legend(order = 2)
+  )+
   geom_line(aes(x = DOW, y = D_SNOW, color = season_year), show.legend = FALSE)+
   scale_x_continuous(limits = c(0, 200),
     breaks = first_of_month$DOW,
@@ -217,4 +311,5 @@ dev.off()
 
 
 ```
+
 

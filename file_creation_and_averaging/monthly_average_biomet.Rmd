@@ -45,7 +45,7 @@ df_avg_biomet <- df_avg_23_24 %>%
     er = round(mean(RECO, na.rm = TRUE), 3),
     tair = round(mean(TA, na.rm = TRUE), 2),
     tsoil5 = round(mean(TS_2_05_1, na.rm = TRUE), 2),
-    swc = round(mean(SWC_1_1_1, na.rm = TRUE), 2),
+    swc = round(mean(SWC_2_1_1, na.rm = TRUE), 2),
     ws = round(mean(WS, na.rm = TRUE), 2),
     dsnow = round(mean(D_SNOW, na.rm = TRUE), 2),
     albedo = round(mean(ALB, na.rm = TRUE), 2),
@@ -53,6 +53,8 @@ df_avg_biomet <- df_avg_23_24 %>%
     parin = round(mean(PPFD_IN, na.rm = TRUE), 2),
     precip = round(mean(P, na.rm = TRUE), 2),
     vpd = round(mean(VPD, na.rm = TRUE), 2),
+    h = round(mean(H, na.rm = TRUE), 2),
+    le = round(mean(LE, na.rm = TRUE), 2),
     
     nee_se = round(std.error(FC, na.rm = TRUE), 3),
     ch4_se = round(std.error(FCH4, na.rm = TRUE), 3),
@@ -60,17 +62,18 @@ df_avg_biomet <- df_avg_23_24 %>%
     er_se = round(std.error(RECO, na.rm = TRUE), 3),
     tair_se = round(std.error(TA, na.rm = TRUE), 2),
     tsoil5_se = round(std.error(TS_2_05_1, na.rm = TRUE), 2),
-    swc_se = round(std.error(SWC_1_1_1, na.rm = TRUE), 2),
+    swc_se = round(std.error(SWC_2_1_1, na.rm = TRUE), 2),
     ws_se = round(std.error(WS, na.rm = TRUE), 2),
     dsnow_se = round(std.error(D_SNOW, na.rm = TRUE), 2),
     albedo_se = round(std.error(ALB, na.rm = TRUE), 2),
     netrad_se = round(std.error(NETRAD, na.rm = TRUE), 2),
     parin_se = round(std.error(PPFD_IN, na.rm = TRUE), 2),
     precip_se = round(std.error(P, na.rm = TRUE), 2),
-    vpd_se = round(std.error(VPD, na.rm = TRUE), 2)
-    
+    vpd_se = round(std.error(VPD, na.rm = TRUE), 2),
+    h_se = round(std.error(H, na.rm = TRUE), 2),
+    le_se = round(std.error(LE, na.rm = TRUE), 2)
     ) %>%
-  pivot_wider(names_from = year, values_from = c(nee, ch4, gpp, er, tair, tsoil5, swc, ws, dsnow, albedo, netrad, parin, precip, vpd, nee_se, ch4_se, gpp_se, er_se, tair_se, tsoil5_se, swc_se, ws_se, dsnow_se, albedo_se, netrad_se, parin_se, precip_se, vpd_se))
+  pivot_wider(names_from = year, values_from = c(nee, ch4, gpp, er, tair, tsoil5, swc, ws, dsnow, albedo, netrad, parin, precip, vpd, h, le, nee_se, ch4_se, gpp_se, er_se, tair_se, tsoil5_se, swc_se, ws_se, dsnow_se, albedo_se, netrad_se, parin_se, precip_se, vpd_se, h_se, le_se))
 
 
 
@@ -591,6 +594,62 @@ dsnow <- ggplot(data = df_avg_biomet)+
                       "2025" = "navy"),
             breaks = c("2022", "2023", "2024", "2025"))
 
+dsnow <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank(),
+  legend.position = "none")+
+  geom_line(aes(x = month, y = dsnow_2022, color = "2022"))+
+  geom_line(aes(x = month, y = dsnow_2023, color = "2023"))+
+  geom_line(aes(x = month, y = dsnow_2024, color = "2024"))+
+  geom_line(aes(x = month, y = dsnow_2025, color = "2025"))+
+  geom_point(aes(x = month, y = dsnow_2022, color = "2022"))+
+  geom_point(aes(x = month, y = dsnow_2023, color = "2023"))+
+  geom_point(aes(x = month, y = dsnow_2024, color = "2024"))+
+  geom_point(aes(x = month, y = dsnow_2025, color = "2025"))+
+  geom_errorbar(
+    aes(x = month,
+        ymin = dsnow_2022 - dsnow_se_2022,
+        ymax = dsnow_2022 + dsnow_se_2022,
+        color = "2022"),
+    width = 0.3
+  )+
+  geom_errorbar(
+    aes(x = month,
+        ymin = dsnow_2023 - dsnow_se_2023,
+        ymax = dsnow_2023 + dsnow_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = dsnow_2024 - dsnow_se_2024,
+        ymax = dsnow_2024 + dsnow_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+    
+  geom_errorbar(
+    aes(x = month,
+        ymin = dsnow_2025 - dsnow_se_2025,
+        ymax = dsnow_2025 + dsnow_se_2025,
+        color = "2025"),
+    width = 0.3
+  )+
+  geom_hline(aes(yintercept = 0, color = "black"))+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('Snow Depth (cm)'))+
+  scale_color_manual(name = " ",
+            values = c("2022" = "green4",
+                      "2023" = "turquoise3", 
+                      "2024" = "salmon",
+                      "2025" = "navy"),
+            breaks = c("2022", "2023", "2024", "2025"))
+
+
+
 ```
 
 ```{r}
@@ -832,6 +891,116 @@ er <- ggplot(data = df_avg_biomet)+
 
 er
 
+h <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank(),
+  legend.position = "none")+
+  geom_line(aes(x = month, y = h_2022, color = "2022"))+
+  geom_line(aes(x = month, y = h_2023, color = "2023"))+
+  geom_line(aes(x = month, y = h_2024, color = "2024"))+
+  geom_line(aes(x = month, y = h_2025, color = "2025"))+
+  geom_point(aes(x = month, y = h_2022, color = "2022"))+
+  geom_point(aes(x = month, y = h_2023, color = "2023"))+
+  geom_point(aes(x = month, y = h_2024, color = "2024"))+
+  geom_point(aes(x = month, y = h_2025, color = "2025"))+
+  geom_errorbar(
+    aes(x = month,
+        ymin = h_2022 - h_se_2022,
+        ymax = h_2022 + h_se_2022,
+        color = "2022"),
+    width = 0.3
+  )+
+  geom_errorbar(
+    aes(x = month,
+        ymin = h_2023 - h_se_2023,
+        ymax = h_2023 + h_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = h_2024 - h_se_2024,
+        ymax = h_2024 + h_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+    
+  geom_errorbar(
+    aes(x = month,
+        ymin = h_2025 - h_se_2025,
+        ymax = h_2025 + h_se_2025,
+        color = "2025"),
+    width = 0.3
+  )+
+  geom_hline(aes(yintercept = 0, color = "black"))+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('H'))+
+  scale_color_manual(name = " ",
+            values = c("2022" = "green4",
+                      "2023" = "turquoise3", 
+                      "2024" = "salmon",
+                      "2025" = "navy"),
+            breaks = c("2022", "2023", "2024", "2025"))
+h
+
+
+le <- ggplot(data = df_avg_biomet)+
+  theme_bw()+
+  theme(
+    plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1), axis.text.y = element_text(size = 12), 
+  axis.title.y = element_text(size = 14),axis.title.x = element_blank())+
+  geom_line(aes(x = month, y = gpp_2022, color = "2022"))+
+  geom_line(aes(x = month, y = gpp_2023, color = "2023"))+
+  geom_line(aes(x = month, y = gpp_2024, color = "2024"))+
+  geom_line(aes(x = month, y = gpp_2025, color = "2025"))+
+  geom_point(aes(x = month, y = gpp_2022, color = "2022"))+
+  geom_point(aes(x = month, y = gpp_2023, color = "2023"))+
+  geom_point(aes(x = month, y = gpp_2024, color = "2024"))+
+  geom_point(aes(x = month, y = gpp_2025, color = "2025"))+
+  geom_errorbar(
+    aes(x = month,
+        ymin = gpp_2022 - gpp_se_2022,
+        ymax = gpp_2022 + gpp_se_2022,
+        color = "2022"),
+    width = 0.3
+  )+
+  geom_errorbar(
+    aes(x = month,
+        ymin = gpp_2023 - gpp_se_2023,
+        ymax = gpp_2023 + gpp_se_2023,
+        color = "2023"),
+    width = 0.3
+  )+
+    geom_errorbar(
+    aes(x = month,
+        ymin = gpp_2024 - gpp_se_2024,
+        ymax = gpp_2024 + gpp_se_2024,
+        color = "2024"),
+    width = 0.3
+  )+    
+  geom_errorbar(
+    aes(x = month,
+        ymin = gpp_2025 - gpp_se_2025,
+        ymax = gpp_2025 + gpp_se_2025,
+        color = "2025"),
+    width = 0.3
+  )+
+  geom_hline(aes(yintercept = 0, color = "black"))+
+  scale_x_continuous(breaks = 1:12, labels = month.abb)+
+  scale_y_continuous(expression('LE'))+
+  scale_color_manual(name = " ",
+            values = c("2022" = "green4",
+                      "2023" = "turquoise3", 
+                      "2024" = "salmon",
+                      "2025" = "navy"),
+            breaks = c("2022", "2023", "2024", "2025"))
+
+le
 
 
 ```

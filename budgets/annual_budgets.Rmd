@@ -52,10 +52,10 @@ df_y1 <- df_y1 %>%
 net_CO2_y1 <- sum(df_y1$FC_F_no_NAs)
 net_CH4_y1 <- sum(df_y1$FCH4_F_no_NAs) 
 
+net_CH4_y1_wp <- net_CH4_y1 * 27  # AR6 Natural emissions GWP with 100 yr horizon
 
-## Marco uses g CH4 not
-
-sum_y1 = net_CO2_y1+net_CH4_y1
+sum_y1 <- net_CO2_y1+net_CH4_y1
+sum_y1_wp <- net_CO2_y1+net_CH4_y1_wp
 
 
 #Year 2 
@@ -76,12 +76,12 @@ df_y2 <- df_y2 %>%
 
 ## Summation of data
 net_CO2_y2 <- sum(df_y2$FC_F_no_NAs)
-net_CH4_y2 <- sum(df_y2$FCH4_F_no_NAs) 
+net_CH4_y2 <- sum(df_y2$FCH4_F_no_NAs)
 
+net_CH4_y2_wp <- net_CH4_y2 * 27  # AR6 Natural emissions GWP with 100 yr horizon
 
-## Marco uses g CH4 not g C, gets a value of ~11 for CH4 in 2023
-
-sum_y2 = net_CO2_y2+net_CH4_y2
+sum_y2 <- net_CO2_y2+net_CH4_y2
+sum_y2_wp <- net_CO2_y2+net_CH4_y2_wp
 
 
 
@@ -103,20 +103,24 @@ df_y3 <- df_y3 %>%
 
 ## Summation of data
 net_CO2_y3 <- sum(df_y3$FC_F_no_NAs)
-net_CH4_y3 <- sum(df_y3$FCH4_F_no_NAs) 
+net_CH4_y3 <- sum(df_y3$FCH4_F_no_NAs)
+
+net_CH4_y3_wp <- net_CH4_y3 * 27  # AR6 Natural emissions GWP with 100 yr horizon
 
 
-sum_y3 = net_CO2_y3+net_CH4_y3
+sum_y3 <- net_CO2_y3+net_CH4_y3
+sum_y3_wp <- net_CO2_y3+net_CH4_y3_wp
 
 
 #Dataframe created to generate bar graph
-net_wp <- data.frame(
-  Category = c("Total", "CO2", "CH4", "Total", "CO2", "CH4", "Total", "CO2", "CH4"),
-  Year = c("1","1","1","2","2","2", "3", "3", "3"),
-  Value = c(round(sum_y1, 2), round(net_CO2_y1, 2), round(net_CH4_y1, 2), 
-            round(sum_y2, 2), round(net_CO2_y2, 2), round(net_CH4_y2, 2), 
+net <- data.frame(
+  Category = c(rep(c("Total", "CO2", "CH4"), 3)),
+  Year = c(rep("1", 3), rep("2", 3), rep("3", 3)),
+  Value = c(round(sum_y1, 2), round(net_CO2_y1, 2), round(net_CH4_y1, 2),
+            round(sum_y2, 2), round(net_CO2_y2, 2), round(net_CH4_y2, 2),
             round(sum_y3, 2), round(net_CO2_y3, 2), round(net_CH4_y3, 2)
-))
+            ))
+
 
 
 ```
@@ -129,7 +133,7 @@ Plot here
 
 #Plot here
 
-budget <- ggplot(net_wp, aes(y = Category, x = Value, fill = factor(Year, levels = c("3", "2", "1")))) +
+budget <- ggplot(net, aes(y = Category, x = Value, fill = factor(Year, levels = c("3", "2", "1")))) +
   theme_bw()+
   theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), 
   axis.title = element_text(size = 16),title = element_text(size = 16), legend.text = element_text(size = 12))+
@@ -143,7 +147,7 @@ budget <- ggplot(net_wp, aes(y = Category, x = Value, fill = factor(Year, levels
     x = expression("Net Carbon Flux (gC"~m^-2~y^-1*")"),
     title = "Annual Carbon Budget",
     fill = " ") +
-  geom_label(aes(label = paste0(Value)), vjust = ifelse(net_wp$Year == 1, -1.5, ifelse(net_wp$Year == 2, 0.5, 2.5)), hjust = ifelse(net_wp$Value >= 0, -0.2, 1.1), colour = "black", fill ="white", size = 5)+ ## Need to fix these!
+  geom_label(aes(label = paste0(Value)), vjust = ifelse(net$Year == 1, -1.5, ifelse(net$Year == 2, 0.5, 2.5)), hjust = ifelse(net$Value >= 0, -0.2, 1.1), colour = "black", fill ="white", size = 5)+ ## Need to fix these!
   scale_x_continuous(limits=c(-80, 13))+
   scale_y_discrete(labels = c("Total" = "Total", 
                               "CO2" = expression(CO[2]), 
@@ -154,6 +158,53 @@ budget
 # png(filename = './png/budget.png',width = 10.20,height = 6.72,units = 'in',res = 2000)
 # budget
 # dev.off()
+
+
+```
+
+## GWP Plot
+
+```{r}
+
+#Dataframe created to generate bar graph with warming potential included
+net_wp <- data.frame(
+  Category = c(rep(c("Total - Mass", "CO2", "CH4 - Mass", "CH4 - WP", "Total - WP"), 3)),
+  Year = c(rep("1", 5), rep("2", 5), rep("3", 5)),
+  Value = c(round(sum_y1, 2), round(net_CO2_y1, 2), round(net_CH4_y1, 2),
+            round(net_CH4_y1_wp), round(sum_y1_wp),
+            round(sum_y2, 2), round(net_CO2_y2, 2), round(net_CH4_y2, 2),
+            round(net_CH4_y2_wp, 2), round(sum_y2_wp, 2), 
+            round(sum_y3, 2), round(net_CO2_y3, 2), round(net_CH4_y3, 2),
+            round(net_CH4_y3_wp, 2), round(sum_y3_wp, 2)
+            ))
+
+#Plot here
+
+wp_budget <- ggplot(net_wp, aes(y = Category, x = Value, fill = factor(Year, levels = c("3", "2", "1")))) +
+  theme_bw()+
+  theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), 
+  axis.title = element_text(size = 16),title = element_text(size = 16), legend.text = element_text(size = 12))+
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
+                    labels = c("1" = "2022/2023", "2" = "2023/2024", "3" = "2024/2025"),  
+                    guide = guide_legend(reverse = TRUE))+
+  geom_vline(xintercept=0, colour = "black")+
+  labs(
+    y = "",
+    x = expression("Net Carbon Flux (gC"~m^-2~y^-1*")"),
+    title = "Annual Carbon Budget",
+    fill = " ") +
+  geom_label(aes(label = paste0(Value)), vjust = ifelse(net_wp$Year == 1, -0.8, ifelse(net_wp$Year == 2, 0.5, 1.8)), hjust = ifelse(net_wp$Value >= 0, -0.2, 1.1), colour = "black", fill ="white", size = 5)+ ## Need to fix these!
+  scale_x_continuous(limits=c(-95, 260))+
+  scale_y_discrete(labels = c("Total" = "Total", 
+                              "CO2" = expression(CO[2]), 
+                              "CH4" = expression(CH[4])))
+
+wp_budget
+
+png(filename = './png/wp_budget.png',width = 10.20,height = 6.72,units = 'in',res = 2000)
+wp_budget
+dev.off()
 
 
 ```

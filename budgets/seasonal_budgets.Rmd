@@ -158,8 +158,8 @@ seasonal_integrals_net <- seasonal_integrals_net %>%
          
 co2seasons <- ggplot(seasonal_integrals_net, aes(x = season_name, y = integral_value.co2, fill = full_year)) +
   theme_bw()+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14), legend.title = element_blank())+
+theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), 
+  axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   geom_hline(yintercept=0, colour="black")+geom_hline(yintercept=0, colour="black")+
   geom_col(position = position_dodge2(width = 0.9)) +
   labs(
@@ -172,7 +172,8 @@ theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 1
   scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
                     labels = c("1" = "2022/2023", "2" = "2023/2024", "3" = "2024/2025"))+
   scale_y_continuous(limits=c(-100, 20)) +
-  scale_x_discrete(limits = c("Fall Senescence ", "Winter ", "Snow Melt ", "Growing Season "), labels = function(x) str_wrap(x, width = 10))
+  scale_x_discrete(limits = c("Fall Senescence ", "Winter ", "Snow Melt ", "Growing Season "), 
+  labels = function(x) str_wrap(recode(x, "Snow Melt " = "Spring Thaw"), width = 10))
 
 co2seasons
 
@@ -188,8 +189,8 @@ co2seasons
 
 ch4seasons <- ggplot(seasonal_integrals_net, aes(x = season_name, y = integral_value.ch4,  fill = factor(full_year, order = TRUE))) +
   theme_bw()+
-theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
-  axis.title = element_text(size = 14), legend.title = element_blank())+
+theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), 
+  axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   geom_hline(yintercept=0, colour="black")+
   geom_col(position = position_dodge2(width = 0.9))+
   scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
@@ -202,7 +203,7 @@ theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 1
   geom_label(aes(label = integral_value.ch4, vjust = -0.7), ,
             position = position_dodge2(width = 0.9), colour = "black", fill ="white", size = 3)+
   scale_y_continuous(limits=c(0, 6), expand = c(0,0))+
-  scale_x_discrete(limits = c("Fall Senescence ", "Winter ", "Snow Melt ", "Growing Season "), labels = function(x) str_wrap(x, width = 10))
+  scale_x_discrete(limits = c("Fall Senescence ", "Winter ", "Snow Melt ", "Growing Season "),labels = function(x) str_wrap(recode(x, "Snow Melt " = "Spring Thaw"), width = 10))
 
 ch4seasons
 
@@ -217,9 +218,9 @@ Grid Plot
 
 ```{r}
 
-# png(filename = './png/seasongrid.png',width = 12,height = 9,units = 'in',res = 2000)
-# co2seasons + ch4seasons + plot_layout(guides = "collect", axes = "collect")
-# dev.off()
+png(filename = './png/seasongrid.png',width = 14,height = 9,units = 'in',res = 2000)
+co2seasons + ch4seasons + plot_layout(guides = "collect", axes = "collect")
+dev.off()
 
 
 ```
