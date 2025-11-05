@@ -1,0 +1,104 @@
+---
+title: "biomet_timestamps"
+author: "Dani Trangmoe"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+
+rm(list = ls())
+Sys.setenv(TZ = "UTC")
+
+library(data.table)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(gridExtra) 
+library(patchwork)
+library(plotrix) # standard error function
+
+```
+
+Load Dataframe
+```{r}
+
+df_avg_23_24 <- fread('./output_files/three_years_daily_avg.csv')
+df_23_24 <- fread("./output_files/three_years_HH.csv")
+
+```
+
+# Carbon Timeseries
+```{r}
+
+parout <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_line(aes(y = PPFD_OUT/400, color = "PAR Out"))+
+  geom_point(aes(y = FC*60*60*24*(1/1e6)*12, color = "NEE"))+
+  geom_hline(yintercept=0, col="black")+
+  scale_y_continuous(limits = c(-4, 2), expression('NEE (gC'~m^-2~d^-1*')'), 
+                     sec.axis = sec_axis(~ . *400, name = expression('PAR Out (units here)')))+
+  scale_x_date(name = NULL,
+                   breaks = seq(as.Date("2022-09-01"), as.Date("2025-10-01"), by = "4 months"), date_labels = "%b %Y")+
+  scale_color_manual(name = NULL,
+            values = c("PAR Out" = "salmon", 
+                      "NEE" = "navy"),
+            breaks = c("NEE",
+              "PAR Out"))
+
+
+swc <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_line(aes(y = SWC_2_2_1/50, color = "SWC"))+
+  geom_point(aes(y = FC*60*60*24*(1/1e6)*12, color = "NEE"))+
+  geom_hline(yintercept=0, col="black")+
+  scale_y_continuous(limits = c(-4, 2), expression('NEE (gC'~m^-2~d^-1*')'), 
+                     sec.axis = sec_axis(~ . *50, name = expression('SWC (%)')))+
+  scale_x_date(name = NULL,
+                   breaks = seq(as.Date("2022-09-01"), as.Date("2025-10-01"), by = "4 months"), date_labels = "%b %Y")+
+  scale_color_manual(name = NULL,
+            values = c("SWC" = "salmon", 
+                      "NEE" = "navy"),
+            breaks = c("NEE",
+              "SWC"))
+
+rain <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_line(aes(y = P*2, color = "Rain"))+
+  geom_point(aes(y = FC*60*60*24*(1/1e6)*12, color = "NEE"))+
+  geom_hline(yintercept=0, col="black")+
+  scale_y_continuous(limits = c(-4, 2), expression('NEE (gC'~m^-2~d^-1*')'), 
+                     sec.axis = sec_axis(~ . *(1/2), name = expression('Rain (mm)')))+
+  scale_x_date(name = NULL,
+                   breaks = seq(as.Date("2022-09-01"), as.Date("2025-10-01"), by = "4 months"), date_labels = "%b %Y")+
+  scale_color_manual(name = NULL,
+            values = c("Rain" = "salmon", 
+                      "NEE" = "navy"),
+            breaks = c("NEE",
+              "Rain"))
+
+shf <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  geom_line(aes(y = G_1_1_1/50, color = "Soil Heat Flux"))+
+  geom_point(aes(y = FC*60*60*24*(1/1e6)*12, color = "NEE"))+
+  geom_hline(yintercept=0, col="black")+
+  scale_y_continuous(limits = c(-4, 2), expression('NEE (gC'~m^-2~d^-1*')'), 
+                     sec.axis = sec_axis(~ . *(50), name = expression('Soil Heat Flux (W/m2)')))+
+  scale_x_date(name = NULL,
+                   breaks = seq(as.Date("2022-09-01"), as.Date("2025-10-01"), by = "4 months"), date_labels = "%b %Y")+
+  scale_color_manual(name = NULL,
+            values = c("Soil Heat Flux" = "salmon", 
+                      "NEE" = "navy"),
+            breaks = c("NEE",
+              "Soil Heat Flux"))
+
+```
+
+
+```{r}
+
+png(filename = './png/biomet_timeseries.png',width = 10,height = 8,units = 'in',res = 2000)
+parout/swc/rain/shf + plot_layout(guides = "collect", axes = "collect")
+dev.off()
+
+```
