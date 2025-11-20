@@ -60,17 +60,16 @@ mean(gs$RECO)
 
 #plot the fit data vs the real PAR, NEE relationship
 lrc <- ggplot(data = gs)+
+  theme_bw()+
   theme(
     plot.background = element_blank(),
     panel.grid.minor = element_blank(),
     axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
     axis.title.y = element_text(size = 14),axis.title.x = element_text(size = 14))+
   geom_hline(aes(yintercept = 0),col = 'black')+
-  geom_point(aes(PPFD_IN,FC
-                 #, col = full_year
-                 ))+
-    geom_line(aes(PPFD_IN,line*-1),col='red')+
-  geom_smooth(formula = y ~ α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-Reco,col='red', aes(PPFD_IN,FC),method = 'lm')+
+  geom_point(aes(PPFD_IN,FC), col = "navy")+
+    geom_line(aes(PPFD_IN,line*-1),col='#E3005D', linewidth = 1.2)+
+  geom_smooth(formula = y ~ α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-Reco,col='#E3005D', aes(PPFD_IN,FC),method = 'lm')+
 #  geom_line(aes(PPFD_IN,lrfit*-1),col='red')+
 #  scale_color_viridis_c()+
   annotate("text", 
@@ -118,7 +117,7 @@ lm <- ggplot(data = gs,aes(line*-1,FC))+
 lm
 
 
-png(filename = './png/lrc_smooth.png',width = 10,height = 6.72,units = 'in',res = 2000)
+png(filename = './png/lrc_smooth.png',width = 10,height = 6.92,units = 'in',res = 2000)
 lrc
 dev.off()
 
