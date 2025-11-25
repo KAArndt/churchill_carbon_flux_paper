@@ -256,10 +256,10 @@ df <- df3
 ```{r}
 
 df <- df %>%
-  mutate(FC_night = ifelse(SW_IN <= 0, FC, NA))
+  mutate(FC_night = ifelse(SW_IN <= 25, FC, NA))
 
 df <- df %>%
-  mutate(FC_night_F = ifelse(SW_IN <= 0, FC_F, NA))
+  mutate(FC_night_F = ifelse(SW_IN <= 25, FC_F, NA))
 
 # Plot the filtered vs. unfiltered CO2 Flux values to visualize nighttime data
 ggplot(data = df)+

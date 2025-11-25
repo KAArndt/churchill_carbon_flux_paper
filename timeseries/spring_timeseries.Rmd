@@ -102,7 +102,8 @@ onset23ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   scale_fill_manual(name = "", values = c("Spring Thaw" = "gray")) +
   scale_linetype_manual(name = "", values = c("RECO Onset" = "dashed", "GPP Onset"= "dotted"))+
   labs(
-    title = expression("2023")
+    title = expression('CO'[2]*' Flux '),
+    subtitle = expression("2023")
   ) +
   scale_x_date(name = expression(""), limits = as.Date(c('2023-04-27', '2023-07-01')))
 
@@ -137,7 +138,7 @@ onset24ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   scale_fill_manual(name = "", values = c("Spring Thaw" = "gray")) +
   scale_linetype_manual(name = "", values = c("RECO Onset" = "dashed", "GPP Onset"= "dotted"))+
   labs(
-    title = expression("2024")
+    subtitle = expression("2024")
   ) +
   scale_x_date(name = expression(""), limits = as.Date(c('2024-04-27', '2024-07-01')))
 
@@ -170,15 +171,17 @@ onset25ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   scale_fill_manual(name = "", values = c("Spring Thaw" = "gray")) +
   scale_linetype_manual(name = "", values = c("RECO Onset" = "dashed", "GPP Onset"= "dotted"))+
   labs(
-    title = expression("2025")
+    subtitle = expression("2025")
   ) +
   scale_x_date(name = expression(""), limits = as.Date(c('2025-04-27', '2025-07-01')))
 
 onset25ts
 
+co2 <- onset23ts / onset24ts / onset25ts + plot_layout(guides = "collect", axis_titles = "collect")
+co2
 
 # png(filename = './png/gpponsetts.png',width = 11,height = 6,units = 'in',res = 2000)
-# onset23ts / onset24ts / onset25ts + plot_layout(guides = "collect", axis_titles = "collect")
+# co2
 # dev.off()
 
 
@@ -215,7 +218,8 @@ springch423ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   scale_fill_manual(values = c("Spring Thaw" = "gray")) +
   guides(fill = guide_legend(title = NULL)) +
   labs(
-    title = expression("2023")
+    title = expression("Methane Flux"),
+    subtitle = expression("2023")
   ) +
   scale_x_date(name = expression(""), limits = as.Date(c('2023-04-27', '2023-07-01')))
 
@@ -245,7 +249,7 @@ springch424ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   scale_fill_manual(values = c("Spring Thaw" = "gray")) +
     guides(fill = guide_legend(title = NULL)) +
   labs(
-    title = expression("2024")
+    subtitle = expression("2024")
   ) + 
   scale_x_date(name = expression(""), limits = as.Date(c('2024-04-27', '2024-07-01')))
 
@@ -274,19 +278,26 @@ springch425ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   scale_fill_manual(values = c("Spring Thaw" = "gray")) +
     guides(fill = guide_legend(title = NULL)) +
   labs(
-    title = expression("2025")
+    subtitle = expression("2025")
   ) + 
   scale_x_date(name = expression(""), limits = as.Date(c('2025-04-27', '2025-07-01')))
 
 springch425ts
 
-# png(filename = './png/methanespringts.png',width = 11,height = 6,units = 'in',res = 2000)
-# springch423ts / springch424ts / springch425ts + plot_layout(guides = "collect", axis_titles = "collect")
-# dev.off()
+methane <- springch423ts / springch424ts / springch425ts + plot_layout(guides = "collect", axis_titles = "collect")
+methane
+
+png(filename = './png/methanespringts.png',width = 11,height = 6,units = 'in',res = 2000)
+co2 + methane
+dev.off()
 
 
 
 ```
+
+
+
+
 
 
 
