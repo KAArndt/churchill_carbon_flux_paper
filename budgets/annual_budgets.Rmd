@@ -148,7 +148,7 @@ budget <- ggplot(net, aes(y = Category, x = Value, fill = factor(Year, levels = 
     title = "Annual Carbon Budget",
     fill = " ") +
   geom_label(aes(label = paste0(Value)), vjust = ifelse(net$Year == 1, -1.5, ifelse(net$Year == 2, 0.5, 2.5)), hjust = ifelse(net$Value >= 0, -0.2, 1.1), colour = "black", fill ="white", size = 5)+ ## Need to fix these!
-  scale_x_continuous(limits=c(-53, 13))+
+  scale_x_continuous(limits=c(-50, 13))+
   scale_y_discrete(labels = c("Total" = "Total", 
                               "CO2" = expression(CO[2]), 
                               "CH4" = expression(CH[4])))
