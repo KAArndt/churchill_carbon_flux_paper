@@ -54,7 +54,7 @@ library(RColorBrewer)
 #df3 <- rbind(df23, df24, df25, fill=TRUE)
 
 # Using new data here!! used summer 2025 to regapfill previous summers so numbers will likely change
-df3 <- fread('./data/CA-CF3_HH_202208062330_202509301800.csv', na.strings="-9999")
+df3 <- fread('./data/CA-CF3_HH_INTERNAL_202208062330_202601010000.csv', na.strings="-9999")
 
 ```
 
