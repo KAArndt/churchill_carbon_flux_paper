@@ -42,9 +42,9 @@ summary(df_avg$DOY)
 
 # #Both (both years of data, beginning at the beginning of fall 2022 and ending at the end of fall 2024. makes two full seasonal cycles of data)
 
-df_avg_23_24_25 <- subset(df_avg, ((df_avg$date > as.POSIXct("2022-09-18 00:00")) & (df_avg$date < as.POSIXct("2025-09-10 00:00"))))
+df_avg_23_24_25 <- subset(df_avg, ((df_avg$date > as.POSIXct("2022-09-18 00:00")) & (df_avg$date < as.POSIXct("2026-01-01 00:00"))))
 
-df_23_24_25 <- subset(df, ((df$TIMESTAMP > as.POSIXct("2022-09-18 00:00")) & (df$TIMESTAMP < as.POSIXct("2025-09-10 00:00"))))
+df_23_24_25 <- subset(df, ((df$TIMESTAMP > as.POSIXct("2022-09-18 00:00")) & (df$TIMESTAMP < as.POSIXct("2026-01-01 00:00"))))
 
 
 
