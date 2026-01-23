@@ -54,6 +54,9 @@ exp_model <- nls(FC_night ~ a * exp(b * TS_1_0_1), data = df_avg_23_24, start = 
 
 # Generate predicted values
 df_avg_23_24$predicted <- predict(exp_model, newdata = df_avg_23_24)
+ 
+# Get p-value for temperature effect (b parameter) 
+p_value_co2 <- summary(exp_model)$coefficients["b", "Pr(>|t|)"]
 
 
 #ch4
@@ -62,6 +65,8 @@ exp_model_ch4 <- nls(FCH4 ~ a * exp(b * TS_1_0_1), data = df_avg_23_24, start = 
 # Generate predicted values
 df_avg_23_24$predicted_ch4 <- predict(exp_model_ch4, newdata = df_avg_23_24)
 
+# Get p-value for temperature effect (b parameter) 
+p_value_ch4 <- summary(exp_model_ch4)$coefficients["b", "Pr(>|t|)"]
 
 
 ####Both years, spring removed
@@ -187,7 +192,7 @@ co2model_ngs <- ggplot(data=df_nogs)+
     title = expression("Nighttime NEE vs. Soil Temperature"))+
  # scale_shape_manual(name = "Year", values = c(16, 17))+
   scale_x_continuous(limits=c(-11,25))+
-  scale_y_continuous(limits=c(-1.7,2.5))+
+  scale_y_continuous(limits=c(-0.5,2.5))+
 theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
   axis.title = element_text(size = 14),
   plot.subtitle = element_text(size = 12, face = "italic"))+

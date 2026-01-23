@@ -52,7 +52,7 @@ seasonal_integrals_co2 <- function(df) {
   # Calculate integral (sum) for each season
   integrals <- df %>%
     group_by(season, full_year) %>%
-    summarise(integral_value = sum(FC_F, na.rm = TRUE)) %>%
+    summarise(integral_value = sum(RAND_ERR_CO2_FLUX, na.rm = TRUE)) %>%
     ungroup() %>%
     arrange(season)
   

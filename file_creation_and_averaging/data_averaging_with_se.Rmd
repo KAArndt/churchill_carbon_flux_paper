@@ -42,14 +42,20 @@ df_avg_biomet <- df_avg_23_24 %>%
     swc = round(mean(SWC_1_1_1, na.rm = TRUE), 2),
     swc2 = round(mean(SWC_2_1_1, na.rm = TRUE), 2),
     ws = round(mean(WS, na.rm = TRUE), 2),
+    rad = round(mean(PPFD_IN, na.rm = TRUE), 2),
+    dsnow = round(mean(D_SNOW, na.rm = TRUE), 2),
     ch4 = round(mean(FCH4, na.rm = TRUE), 2),
+    ch4_err = round(mean(RAND_ERR_CH4_FLUX, na.rm = TRUE), 2),
+    co2_err = round(mean(RAND_ERR_CO2_FLUX, na.rm = TRUE), 2),
     nee.se = round(std.error(FC, na.rm = TRUE), 2),
     tair.se = round(std.error(TA, na.rm = TRUE), 2),
     tsoil5.se = round(std.error(TS_2_05_1, na.rm = TRUE), 2),
     swc.se = round(std.error(SWC_1_1_1, na.rm = TRUE), 2),
     swc2.se = round(std.error(SWC_2_1_1, na.rm = TRUE), 2),
     ws.se = round(std.error(WS, na.rm = TRUE), 2),
-    ch4.se = round(std.error(FCH4, na.rm = TRUE), 2)
+    ch4.se = round(std.error(FCH4, na.rm = TRUE), 2),
+    rad.se = round(std.error(PPFD_IN, na.rm = TRUE), 2),
+    dsnow.se = round(std.error(D_SNOW, na.rm = TRUE), 2)
     ) %>%
   mutate(
     nee_with_se = paste0(nee, " ± ", nee.se),  # Combine value and SE
@@ -58,9 +64,11 @@ df_avg_biomet <- df_avg_23_24 %>%
   swc_with_se = paste0(swc, " ± ", swc.se),
   swc2_with_se = paste0(swc2, " ± ", swc2.se),
   ws_with_se = paste0(ws, " ± ", ws.se),
-  fch4_with_se = paste0(ch4, " ± ", ch4.se)
+  fch4_with_se = paste0(ch4, " ± ", ch4.se),
+  rad_with_se = paste0(rad, " ± ", rad.se),
+  dsnow_with_se = paste0(dsnow, " ± ", dsnow.se)
   )%>%
-  select(season, nee_with_se, tair_with_se, tsoil5_with_se, swc_with_se, swc2_with_se, ws_with_se, fch4_with_se) %>%
+  select(season, co2_err, ch4_err, nee_with_se, tair_with_se, tsoil5_with_se, swc_with_se, swc2_with_se, ws_with_se, fch4_with_se, rad_with_se, dsnow_with_se) %>%
     arrange(factor(season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024", "Winter 2025", "Snow Melt 2025", "Growing Season 2025")))
 
 
@@ -105,13 +113,17 @@ df_avg_both <- df_avg_23_24 %>%
     swc_1 = round(mean(SWC_1_1_1, na.rm = TRUE), 2),
     swc_2 = round(mean(SWC_2_1_1, na.rm = TRUE), 2),
     ws = round(mean(WS, na.rm = TRUE), 2),
+    rad = round(mean(PPFD_IN, na.rm = TRUE), 2),
+    ch4_err = round(mean(RAND_ERR_CH4_FLUX, na.rm = TRUE), 2),
+    co2_err = round(mean(RAND_ERR_CO2_FLUX, na.rm = TRUE), 2),
     nee.se = round(std.error(FC, na.rm = TRUE), 2),
     ch4.se = round(std.error(FCH4, na.rm = TRUE), 2),
     tair.se = round(std.error(TA, na.rm = TRUE), 2),
     tsoil5.se = round(std.error(TS_2_05_1, na.rm = TRUE), 2),
     swc_1.se = round(std.error(SWC_1_1_1, na.rm = TRUE), 2),
     swc_2.se = round(std.error(SWC_2_1_1, na.rm = TRUE), 2),
-    ws.se = round(std.error(WS, na.rm = TRUE), 2)
+    ws.se = round(std.error(WS, na.rm = TRUE), 2),
+    rad.se = round(std.error(PPFD_IN, na.rm = TRUE), 2)
     ) %>%
   mutate(
     nee_with_se = paste0(nee, " ± ", nee.se),  # Combine value and SE
@@ -120,9 +132,10 @@ df_avg_both <- df_avg_23_24 %>%
     tsoil5_with_se = paste0(tsoil5, " ± ", tsoil5.se),
   swc_1_with_se = paste0(swc_1, " ± ", swc_1.se),
   swc_2_with_se = paste0(swc_2, " ± ", swc_2.se),
-  ws_with_se = paste0(ws, " ± ", ws.se)
+  ws_with_se = paste0(ws, " ± ", ws.se),
+  rad_with_se = paste0(rad, " ± ", rad.se)
   )%>%
-  select(season_name, nee_with_se, ch4_with_se, tair_with_se, tsoil5_with_se, swc_1_with_se,swc_2_with_se, ws_with_se) %>%
+  select(season_name, co2_err, ch4_err, nee_with_se, ch4_with_se, tair_with_se, tsoil5_with_se, swc_1_with_se,swc_2_with_se, ws_with_se, rad_with_se) %>%
     arrange(factor(season_name, levels = c("Fall Senescence", "Winter", "Snow Melt", "Growing Season")))
 
 

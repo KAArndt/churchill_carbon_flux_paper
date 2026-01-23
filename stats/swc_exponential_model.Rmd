@@ -187,5 +187,13 @@ ch4model
 ```
 
 
+Code from Kelcy!
+```{r}
 
+# Extract statistics from exponential model 
+exp_model <- nls(FC_night ~ a * exp(b * TS_3_1_1), data = fc_night_data, start = list(a = 1, b = 0.1)) 
+# Get p-value for temperature effect (b parameter) 
+p_value_temp <- summary(exp_model)$coefficients["b", "Pr(>|t|)"]
+
+```
 

@@ -87,7 +87,7 @@ onset23ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   # geom_hline(yintercept=max_reco_2023*0.1, col="darkgreen", linetype = "dashed")+
   # geom_vline(xintercept = as.Date("2023-05-04"))+
   # geom_vline(xintercept = as.Date("2023-06-11"))+
-  geom_vline(aes(xintercept = as.Date("2023-05-30"), linetype = "GPP Onset"))+
+  geom_vline(aes(xintercept = as.Date("2023-05-25"), linetype = "GPP Onset"))+
   geom_vline(aes(xintercept = as.Date("2023-05-08"), linetype = "RECO Onset"))+
   scale_y_continuous(limits = c(-2, 2), expression('CO'[2]*' Flux (g C'~m^-2~d^-1*')')
                     # ,sec.axis = sec_axis(~ . *6, name = expression('Soil Temp ('*degree*'C)'))
@@ -180,10 +180,9 @@ onset25ts
 co2 <- onset23ts / onset24ts / onset25ts + plot_layout(guides = "collect", axis_titles = "collect")
 co2
 
-# png(filename = './png/gpponsetts.png',width = 11,height = 6,units = 'in',res = 2000)
-# co2
-# dev.off()
-
+png(filename = './png/gpponsetts.png',width = 6,height = 6,units = 'in',res = 2000)
+co2
+dev.off()
 
 
 ```
@@ -216,7 +215,7 @@ springch423ts <- ggplot(data = df_avg_23_24, aes(x=date))+
             breaks = c("Methane Flux", 
               "Air Temp", "Soil Temp")) +  
   scale_fill_manual(values = c("Spring Thaw" = "gray")) +
-  guides(fill = guide_legend(title = NULL)) +
+  guides(fill = guide_legend(title = NULL, order = 1), color = guide_legend(order = 2)) +
   labs(
     title = expression("Methane Flux"),
     subtitle = expression("2023")
@@ -247,7 +246,7 @@ springch424ts <- ggplot(data = df_avg_23_24, aes(x=date))+
             breaks = c("Methane Flux", 
               "Air Temp", "Soil Temp")) +
   scale_fill_manual(values = c("Spring Thaw" = "gray")) +
-    guides(fill = guide_legend(title = NULL)) +
+  guides(fill = guide_legend(title = NULL, order = 1), color = guide_legend(order = 2)) +
   labs(
     subtitle = expression("2024")
   ) + 
@@ -276,7 +275,7 @@ springch425ts <- ggplot(data = df_avg_23_24, aes(x=date))+
             breaks = c("Methane Flux", 
               "Air Temp", "Soil Temp")) +
   scale_fill_manual(values = c("Spring Thaw" = "gray")) +
-    guides(fill = guide_legend(title = NULL)) +
+  guides(fill = guide_legend(title = NULL, order = 1), color = guide_legend(order = 2)) +
   labs(
     subtitle = expression("2025")
   ) + 
@@ -287,8 +286,8 @@ springch425ts
 methane <- springch423ts / springch424ts / springch425ts + plot_layout(guides = "collect", axis_titles = "collect")
 methane
 
-png(filename = './png/methanespringts.png',width = 11,height = 6,units = 'in',res = 2000)
-co2 + methane
+png(filename = './png/methanespringts.png',width = 6,height = 6,units = 'in',res = 2000)
+methane
 dev.off()
 
 
