@@ -1,0 +1,162 @@
+---
+title: "zero_curtain_budgets"
+output: html_document
+---
+
+
+Seasonal Budgets
+
+Use half-hourly data to calculate net co2 budgets by season Average rate per day
+
+To separate graph for daily rate; use geom_violin
+
+
+```{r, include=FALSE}
+rm(list = ls())
+Sys.setenv(TZ = "UTC")
+
+library(data.table)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(gridExtra)
+library(patchwork) # for plot mapping
+library(plotrix) # standard error function
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = 'C:/Users/dtrangmoe/Documents/github/churchill_carbon_flux_paper/') #use this to set your directory
+```
+
+
+## Load Data
+```{r}
+
+df_all <- fread("./output_files/three_years_HH.csv")
+
+```
+
+
+## Define Zero Curtain
+
+```{r}
+
+
+df_all <- df_all %>%
+  mutate(
+      zc = case_when(
+      (TIMESTAMP >= as.POSIXct("2022-10-21") & TIMESTAMP <= as.POSIXct("2022-11-29")) ~ 'Fall ZC 2022',
+      
+      (TIMESTAMP >= as.POSIXct("2023-05-06") & TIMESTAMP <= as.POSIXct("2023-06-02")) ~ 'Spring ZC 2023',
+      
+      (TIMESTAMP >= as.POSIXct("2023-10-25") & TIMESTAMP <= as.POSIXct("2023-11-27")) ~ 'Fall ZC 2023',
+      
+      (TIMESTAMP >= as.POSIXct("2024-05-03") & TIMESTAMP <= as.POSIXct("2024-06-19")) ~ 'Spring ZC 2024',
+      
+      (TIMESTAMP >= as.POSIXct("2024-10-23") & TIMESTAMP <= as.POSIXct("2024-12-17")) ~ 'Fall ZC 2024',
+      
+      (TIMESTAMP >= as.POSIXct("2025-05-08") & TIMESTAMP <= as.POSIXct("2025-06-16")) ~ 'Spring ZC 2025',
+      TRUE ~ NA_character_
+    )
+  )
+
+
+
+
+```
+
+
+
+## NEE
+Finds the net CO2 exchange of each season as defined above
+
+```{r}
+
+seasonal_integrals_co2 <- function(df) {
+  
+  # Calculate integral (sum) for each season
+  integrals <- df %>%
+    group_by(zc) %>%
+    summarise(integral_value = sum(FC_F, na.rm = TRUE), avg_rate = round(mean(FC, na.rm = TRUE), 2), 
+              avg_std_dev = round(std.error(FC, na.rm = TRUE), 2)) %>%
+    ungroup() %>%
+    arrange(zc)
+  
+  
+  # Changes units from  Micromoles of CO2/((m^2)s) to Grams of C/m^2, and rounds
+    integrals$integral_value = 
+      round(integrals$integral_value*60*30*(1/1000000)*12, 2)
+  
+  return(integrals)
+}
+
+
+
+# Full set
+
+seasonal_integrals_co2 <- seasonal_integrals_co2(df_all)
+
+# seasonal_integrals_co2$season <- factor(seasonal_integrals_co2$season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024", "Winter 2025", "Snow Melt 2025", "Growing Season 2025"), ordered = TRUE)
+
+
+
+```
+
+
+## Methane
+
+
+```{r}
+
+seasonal_integrals_ch4 <- function(df) {
+  
+  # Calculate integral (sum) for each season
+  integrals <- df %>%
+    group_by(zc) %>%
+    summarise(integral_value = sum(FCH4_F, na.rm = TRUE), avg_rate = round(mean(FCH4, na.rm = TRUE), 2), 
+              avg_std_dev = round(std.error(FCH4, na.rm = TRUE), 2)) %>%
+    ungroup() %>%
+    arrange(zc)
+  
+    
+  # Changes units from nmol of CH4/(m^2s) to grams of C/m^2, and rounds
+    integrals$integral_value = 
+      round(integrals$integral_value*60*30*(1/1e9)*12, 2)
+  
+  return(integrals)
+}
+
+
+seasonal_integrals_ch4 <- seasonal_integrals_ch4(df_all)
+
+
+# 
+# seasonal_integrals_ch4$season <- factor(seasonal_integrals_ch4$season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024", "Winter 2025", "Snow Melt 2025", "Growing Season 2025"), ordered = TRUE)
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

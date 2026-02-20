@@ -139,9 +139,10 @@ ggplot(data = limit)+theme_bw()+
   geom_line(aes(date,FC,col='Real'),alpha=0.8)+
   scale_x_datetime(limits = as.POSIXct(c("2025-07-01","2025-07-15")))
 
-
+### Take budget
 ### Remove RAND_ERR_CO2_FLUX from cleaned data points
-### 
+### St dev addition: sqrt(std1^2 + std2^2+...)
+
 
 
 

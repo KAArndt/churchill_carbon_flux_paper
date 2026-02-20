@@ -38,6 +38,30 @@ df_all <- fread("./output_files/three_years_HH.csv")
 
 ```
 
+### Create error Variables
+
+```{r}
+
+############################# NEE #########################
+
+# Create error column with appropriate error for data source
+
+df_all$error.nee <- ifelse(is.na(df_all$FC), df_all$sd.rf.nee*60*(1/1e6)*12*30, df_all$RAND_ERR_CO2_FLUX*60*(1/1e6)*12*30)
+
+# RMSE error calculation
+
+df_all$rmse.nee.g <- ifelse(is.na(df_all$FC), df_all$rmse.nee*60*(1/1e6)*12*30, 0)
+
+########################### CH4 ############################
+
+df_all$error.ch4 <- ifelse(is.na(df_all$FCH4), df_all$sd.rf.ch4*60*(1/1e9)*12*30, df_all$RAND_ERR_CH4_FLUX*60*(1/1e6)*12*30)
+
+# RMSE error calculation
+
+df_all$rmse.ch4.g <- ifelse(is.na(df_all$FCH4), df_all$rmse.ch4*60*(1/1e9)*12*30, 0)
+
+
+```
 
 ## NEE
 
@@ -47,19 +71,25 @@ Finds the net CO2 exchange of each season as defined above
 
 ```{r}
 
-seasonal_integrals_co2 <- function(df) {
+seasonal_integrals_net <- function(df) {
   
   # Calculate integral (sum) for each season
   integrals <- df %>%
     group_by(season, full_year) %>%
-    summarise(integral_value = sum(RAND_ERR_CO2_FLUX, na.rm = TRUE)) %>%
+    summarise(integral_value.co2 = sum(FC_F, na.rm = TRUE), integral_value.ch4 = sum(FCH4_F, na.rm = TRUE), error.co2 = (sqrt(sum((error.nee)^2)) + sqrt(sum((rmse.nee.g)^2))), error.ch4 = (sqrt(sum((error.ch4)^2)) + sqrt(sum((rmse.ch4.g)^2)))) %>%
     ungroup() %>%
     arrange(season)
   
   
   # Changes units from  Micromoles of CO2/((m^2)s) to Grams of C/m^2, and rounds
-    integrals$integral_value = 
-      round(integrals$integral_value*60*30*(1/1000000)*12, 2)
+    integrals$integral_value.co2 = 
+      round(integrals$integral_value.co2 *60*30*(1/1e6)*12, 2)
+    
+      # Changes units from nmol of CH4/(m^2s) to grams of C/m^2, and rounds
+    integrals$integral_value.ch4 = 
+      round(integrals$integral_value.ch4 *60*30*(1/1e9)*12, 2)
+    
+    
   
   return(integrals)
 }
@@ -68,12 +98,12 @@ seasonal_integrals_co2 <- function(df) {
 
 # Full set
 
-seasonal_integrals_co2 <- seasonal_integrals_co2(df_all)
+seasonal_integrals_net <- seasonal_integrals_net(df_all)
 
-seasonal_integrals_co2$season <- factor(seasonal_integrals_co2$season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024", "Winter 2025", "Snow Melt 2025", "Growing Season 2025"), ordered = TRUE)
+seasonal_integrals_net$season <- factor(seasonal_integrals_net$season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024", "Winter 2025", "Snow Melt 2025", "Growing Season 2025"), ordered = TRUE)
 
 
-seasonal_integrals_co2 <- seasonal_integrals_co2 %>%
+seasonal_integrals_net <- seasonal_integrals_net %>%
   mutate(
     season_name = str_extract(season, "^[^0-9]+"), # Extract the season name
     season_year = str_extract(season, "\\d{4}")     # Extract the 4-digit year
@@ -84,52 +114,11 @@ seasonal_integrals_co2 <- seasonal_integrals_co2 %>%
 
 ```
 
-
-## Methane
-
-
-```{r}
-
-seasonal_integrals_ch4 <- function(df) {
-  
-  # Calculate integral (sum) for each season
-  integrals <- df %>%
-    group_by(season, full_year) %>%
-    summarise(integral_value = sum(FCH4_F, na.rm = TRUE)) %>%
-    ungroup() %>%
-    arrange(season)
-  
-    
-  # Changes units from nmol of CH4/(m^2s) to grams of C/m^2, and rounds
-    integrals$integral_value = 
-      round(integrals$integral_value*60*30*(1/1e9)*12, 2)
-  
-  return(integrals)
-}
-
-
-seasonal_integrals_ch4 <- seasonal_integrals_ch4(df_all)
-
-
-
-seasonal_integrals_ch4$season <- factor(seasonal_integrals_ch4$season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024", "Winter 2025", "Snow Melt 2025", "Growing Season 2025"), ordered = TRUE)
-
-
-seasonal_integrals_ch4 <- seasonal_integrals_ch4 %>%
-  mutate(
-    season_name = str_extract(season, "^[^0-9]+"), # Extract the season name
-    season_year = str_extract(season, "\\d{4}")     # Extract the 4-digit year
-  )
-
-
-```
 
 ## Grouping
 
 ```{r}
 
-#Join co2 and ch4
-seasonal_integrals_net <- left_join(seasonal_integrals_co2, seasonal_integrals_ch4, by = c('season','season_year', 'season_name', 'full_year'), suffix = c('.co2','.ch4'))
 
 #create net integral values
 seasonal_integrals_net$integral_value.net <- seasonal_integrals_net$integral_value.co2 + seasonal_integrals_net$integral_value.ch4
@@ -167,6 +156,12 @@ theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 1
     y = expression("Net NEE (g C m"^-2*")"),
     title = expression("Net NEE by Season")
   ) +
+  geom_errorbar(aes(ymin = integral_value.co2 - error.co2, 
+                     ymax = integral_value.co2 + error.co2),
+                 position = position_dodge(width = 0.9), 
+                 width = 0.5,
+                 height = 01, # Controls the width of the error bar 'caps'
+                 colour = "black")+
   geom_label(aes(label = integral_value.co2, vjust = ifelse(integral_value.co2 >= 0, -1, 1.5)), colour = "black", fill ="white",
              position = position_dodge2(width = 0.9), size = 3)+
   scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
@@ -200,6 +195,12 @@ theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 1
     y = expression("Net CH"[4] * " Flux (g C m"^-2*")"),
     title = expression("Net CH"[4] * " Flux by Season")
   ) +
+  geom_errorbar(aes(ymin = integral_value.ch4 - error.ch4, 
+                     ymax = integral_value.ch4 + error.ch4),
+                 position = position_dodge(width = 0.9),  
+                 width = 0.5,
+                 height = 0.2, # Controls the width of the error bar 'caps'
+                 colour = "black")+
   geom_label(aes(label = integral_value.ch4, vjust = -0.7), ,
             position = position_dodge2(width = 0.9), colour = "black", fill ="white", size = 3)+
   scale_y_continuous(limits=c(0, 6), expand = c(0,0))+

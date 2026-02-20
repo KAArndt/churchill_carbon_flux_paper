@@ -38,14 +38,14 @@ df_y3 = fread('./output_files/year3_HH.csv')
 
 # Net CO2 Flux
 df_y1 <- df_y1 %>%
-  mutate(FC_F_no_NAs = ifelse(is.na(FC_F), 0, FC_F * 60 * (1/1e6) * 12 * 30))
+  mutate(FC_F_no_NAs = ifelse(is.na(FC_F), 0, FC_F *60*(1/1e6)*12*30))
 
 
 # Units start as nanomoles of CH4/(m^2s), converted to Grams of C/m^2
 
 #Net CH4 Flux
 df_y1 <- df_y1 %>%
-  mutate(FCH4_F_no_NAs = ifelse(is.na(FCH4_F), 0, FCH4_F*60*(1/1e9)*12*30))
+  mutate(FCH4_F_no_NAs = ifelse(is.na(FCH4_F), 0, FCH4_F *60*(1/1e9)*12*30))
 
 
 ## Summation of data
@@ -112,6 +112,58 @@ sum_y3 <- net_CO2_y3+net_CH4_y3
 sum_y3_wp <- net_CO2_y3+net_CH4_y3_wp
 
 
+```
+
+Add error calculations
+```{r}
+
+############################# NEE #########################
+
+# Create error column with appropriate error for data source
+
+df_y1$error.nee <- ifelse(is.na(df_y1$FC), df_y1$sd.rf.nee*60*(1/1e6)*12*30, df_y1$RAND_ERR_CO2_FLUX*60*(1/1e6)*12*30)
+df_y2$error.nee <- ifelse(is.na(df_y2$FC), df_y2$sd.rf.nee*60*(1/1e6)*12*30, df_y2$RAND_ERR_CO2_FLUX*60*(1/1e6)*12*30)
+df_y3$error.nee <- ifelse(is.na(df_y3$FC), df_y3$sd.rf.nee*60*(1/1e6)*12*30, df_y3$RAND_ERR_CO2_FLUX*60*(1/1e6)*12*30)
+
+#RMSE error calculation
+
+df_y1$rmse.nee.g <- ifelse(is.na(df_y1$FC), df_y1$rmse.nee*60*(1/1e6)*12*30, 0)
+df_y2$rmse.nee.g <- ifelse(is.na(df_y2$FC), df_y2$rmse.nee*60*(1/1e6)*12*30, 0)
+df_y3$rmse.nee.g <- ifelse(is.na(df_y3$FC), df_y3$rmse.nee*60*(1/1e6)*12*30, 0)
+
+err_y1.nee <- sqrt(sum((df_y1$error.nee)^2)) + sqrt(sum((df_y1$rmse.nee.g)^2))
+err_y2.nee <- sqrt(sum((df_y2$error.nee)^2)) + sqrt(sum((df_y2$rmse.nee.g)^2))
+err_y3.nee <- sqrt(sum((df_y3$error.nee)^2)) + sqrt(sum((df_y3$rmse.nee.g)^2))
+
+
+########################### CH4 ############################
+
+df_y1$error.ch4 <- ifelse(is.na(df_y1$FCH4), df_y1$sd.rf.ch4*60*(1/1e9)*12*30, df_y1$RAND_ERR_CH4_FLUX*60*(1/1e6)*12*30)
+df_y2$error.ch4 <- ifelse(is.na(df_y2$FCH4), df_y2$sd.rf.ch4*60*(1/1e9)*12*30, df_y2$RAND_ERR_CH4_FLUX*60*(1/1e6)*12*30)
+df_y3$error.ch4 <- ifelse(is.na(df_y3$FCH4), df_y3$sd.rf.ch4*60*(1/1e9)*12*30, df_y3$RAND_ERR_CH4_FLUX*60*(1/1e6)*12*30)
+
+#RMSE error calculation
+
+df_y1$rmse.ch4.g <- ifelse(is.na(df_y1$FCH4), df_y1$rmse.ch4*60*(1/1e9)*12*30, 0)
+df_y2$rmse.ch4.g <- ifelse(is.na(df_y2$FCH4), df_y2$rmse.ch4*60*(1/1e9)*12*30, 0)
+df_y3$rmse.ch4.g <- ifelse(is.na(df_y3$FCH4), df_y3$rmse.ch4*60*(1/1e9)*12*30, 0)
+
+err_y1.ch4 <- sqrt(sum((df_y1$error.ch4)^2)) + sqrt(sum((df_y1$rmse.ch4.g)^2))
+err_y2.ch4 <- sqrt(sum((df_y2$error.ch4)^2)) + sqrt(sum((df_y2$rmse.ch4.g)^2))
+err_y3.ch4 <- sqrt(sum((df_y3$error.ch4)^2)) + sqrt(sum((df_y3$rmse.ch4.g)^2))
+
+########################## Total #############################
+
+err_total_y1 <- sqrt(sum((err_y1.nee^2)+(err_y1.ch4^2)))
+err_total_y2 <- sqrt(sum((err_y2.nee^2)+(err_y2.ch4^2)))
+err_total_y3 <- sqrt(sum((err_y3.nee^2)+(err_y3.ch4^2)))
+
+```
+
+Create dataframe here
+
+```{r}
+
 #Dataframe created to generate bar graph
 net <- data.frame(
   Category = c(rep(c("Total", "CO2", "CH4"), 3)),
@@ -119,12 +171,14 @@ net <- data.frame(
   Value = c(round(sum_y1, 2), round(net_CO2_y1, 2), round(net_CH4_y1, 2),
             round(sum_y2, 2), round(net_CO2_y2, 2), round(net_CH4_y2, 2),
             round(sum_y3, 2), round(net_CO2_y3, 2), round(net_CH4_y3, 2)
-            ))
+            ),
+  Error = c(round(err_total_y1, 2), round(err_y1.nee, 2), round(err_y1.ch4, 2), 
+            round(err_total_y2, 2), round(err_y2.nee, 2), round(err_y1.ch4, 2), 
+            round(err_total_y3, 2), round(err_y3.nee, 2), round(err_y1.ch4, 2))
+)
 
-
-
+rm(df_y1, df_y2, df_y3)
 ```
-
 
 
 
@@ -138,7 +192,12 @@ budget <- ggplot(net, aes(y = Category, x = Value, fill = factor(Year, levels = 
   theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), 
   axis.title = element_text(size = 16),title = element_text(size = 16), legend.text = element_text(size = 12))+
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
+  geom_errorbarh(aes(xmin = Value - Error, 
+                     xmax = Value + Error),
+                 position = position_dodge(width = 0.9), 
+                 height = 0.2, # Controls the width of the error bar 'caps'
+                 colour = "black") +
+  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "mediumorchid"),
                     labels = c("1" = "2022/2023", "2" = "2023/2024", "3" = "2024/2025"),  
                     guide = guide_legend(reverse = TRUE))+
   geom_vline(xintercept=0, colour = "black")+
@@ -147,7 +206,7 @@ budget <- ggplot(net, aes(y = Category, x = Value, fill = factor(Year, levels = 
     x = expression("Net Carbon Flux (gC"~m^-2~y^-1*")"),
     title = "Annual Carbon Budget",
     fill = " ") +
-  geom_label(aes(label = paste0(Value)), vjust = ifelse(net$Year == 1, -1.5, ifelse(net$Year == 2, 0.5, 2.5)), hjust = ifelse(net$Value >= 0, -0.2, 1.1), colour = "black", fill ="white", size = 5)+ ## Need to fix these!
+  geom_label(aes(label = paste0(Value)), vjust = ifelse(net$Year == 1, -1.5, ifelse(net$Year == 2, 0.5, 2.5)), hjust = ifelse(net$Value >= 0, -0.2, 1.3), colour = "black", fill ="white", size = 5)+ ## Need to fix these!
   scale_x_continuous(limits=c(-50, 13))+
   scale_y_discrete(labels = c("Total" = "Total", 
                               "CO2" = expression(CO[2]), 
@@ -155,9 +214,9 @@ budget <- ggplot(net, aes(y = Category, x = Value, fill = factor(Year, levels = 
 
 budget
 
-# png(filename = './png/budget.png',width = 10.20,height = 6.72,units = 'in',res = 2000)
-# budget
-# dev.off()
+png(filename = './png/budget.png',width = 10.20,height = 6.72,units = 'in',res = 300)
+budget
+dev.off()
 
 
 ```
@@ -185,7 +244,7 @@ wp_budget <- ggplot(net_wp, aes(y = Category, x = Value, fill = factor(Year, lev
   theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), 
   axis.title = element_text(size = 16),title = element_text(size = 16), legend.text = element_text(size = 12))+
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
+  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "mediumorchid"),
                     labels = c("1" = "2022/2023", "2" = "2023/2024", "3" = "2024/2025"),  
                     guide = guide_legend(reverse = TRUE))+
   geom_vline(xintercept=0, colour = "black")+
