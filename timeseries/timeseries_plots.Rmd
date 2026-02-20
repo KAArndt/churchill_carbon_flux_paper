@@ -66,9 +66,9 @@ methanets <- ggplot(data = df_avg_23_24, aes(x=date))+
 
 methanets
 
-png(filename = './png/fluxts.png',width = 10,height = 6,units = 'in',res = 2000)
-carbonts/methanets + plot_layout(guides = "collect", axes = "collect")
-dev.off()
+# png(filename = './png/fluxts.png',width = 10,height = 6,units = 'in',res = 2000)
+# carbonts/methanets + plot_layout(guides = "collect", axes = "collect")
+# dev.off()
 
 ```
 
@@ -100,39 +100,12 @@ soiltempts <- ggplot(data = df_avg_23_24)+ theme_bw()+
 
 soiltempts
 
-png(filename = './png/soiltempts.png',width = 10.96,height = 3.67,units = 'in',res = 2000)
-soiltempts
-dev.off()
+# png(filename = './png/soiltempts.png',width = 10.96,height = 3.67,units = 'in',res = 2000)
+# soiltempts
+# dev.off()
 ```
 
-Seasonal and met timeseries
-```{r}
-
-class(df_avg_23_24$season_year)
-df_avg_23_24$season_year <- as.factor(df_avg_23_24$season_year)
-
-
-season_ts <- ggplot(data = df_avg_23_24, aes(x=DOY))+
-  theme_bw()+
-  facet_wrap(~season_name, scales = "free")+
-  geom_point(aes(y = FC_F*60*60*24*(1/1e6)*12, shape = "Gapfilled", color = season_year))+
-  geom_point(aes(y = FC*60*60*24*(1/1e6)*12, shape = "Measured", color = season_year))+
-  geom_hline(yintercept=0, col="black")+
-  scale_y_continuous(limits = c(-3.2, 1.4), expression('NEE (gC-CO'[2]~m^-2~d^-1*')'))+
-  # scale_x_date(name = NULL,
-  #                  breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
-  scale_shape_manual(name = NULL,
-            values = c("Gapfilled" = 1,
-                      "Measured" = 16),
-            breaks = c("Gapfilled", "Measured"))
-
-season_ts
-
-
-
-```
-
-# Seasonal Timeseries
+# Setup
 
 Shade data
 
@@ -247,7 +220,7 @@ gs_25 <- data.frame(
 ```
 
 
-
+## Met Timeseries
 ```{r}
 
 co2_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
@@ -296,6 +269,10 @@ co2_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_point(aes(y = FC_F*60*60*24*(1/1e6)*12, shape = "Gapfilled"), color = "navy")+
   geom_point(aes(y = FC*60*60*24*(1/1e6)*12, shape = "Measured"), color = "navy")+
   geom_hline(yintercept=0, col="black")+
+  geom_vline(xintercept = as.Date("2022-09-19"), col = "black")+
+  geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
+  geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
+  geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
   scale_y_continuous(limits = c(-3.2, 1.4), expression('NEE (gC-CO'[2]~m^-2~d^-1*')'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
@@ -358,6 +335,10 @@ ch4_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_point(aes(y = FCH4_F*60*60*24*(1/1e9)*12*13, shape = "Gapfilled"), color = "navy")+
   geom_point(aes(y = FCH4*60*60*24*(1/1e9)*12*13, shape = "Measured"), color = "navy")+
   geom_hline(yintercept=0, col="black")+
+  geom_vline(xintercept = as.Date("2022-09-19"), col = "black")+
+  geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
+  geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
+  geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
   scale_y_continuous(limits = c(-0.5, 1.4), expression('CH'[4]*' Flux (gC-CH'[4]~m^-2~d^-1*')'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
@@ -376,7 +357,7 @@ ch4_ts
 
 
 
-swout_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
+sw_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   theme_bw()+
   
     geom_rect(data = thaw_23, 
@@ -422,6 +403,10 @@ swout_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_line(aes(y = SW_OUT), color = "navy")+
   #geom_point(aes(y = FC*60*60*24*(1/1e6)*12, shape = "Measured"), color = "navy")+
   geom_hline(yintercept=0, col="black")+
+  geom_vline(xintercept = as.Date("2022-09-19"), col = "black")+
+  geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
+  geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
+  geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
   scale_y_continuous(limits = c(-0, 250), expression('Outgoing Shortwave Radiation (W'~m^-2*')'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
@@ -436,7 +421,7 @@ swout_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
                       "Growing Season" = "green4"),
             breaks = c("Spring Thaw", "Fall Senescence", "Winter", "Growing Season"))
 
-swout_ts
+sw_ts
 
 
 
@@ -486,6 +471,10 @@ snow_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   
   geom_line(aes(y = D_SNOW), color = "navy")+
   geom_hline(yintercept=0, col="black")+
+  geom_vline(xintercept = as.Date("2022-09-19"), col = "black")+
+  geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
+  geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
+  geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
   scale_y_continuous(limits = c(0, 65), expression('Snow Depth (cm)'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
@@ -548,6 +537,10 @@ swc_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   
   geom_line(aes(y = SWC_2_1_1), color = "navy")+
   geom_hline(yintercept=0, col="black")+
+  geom_vline(xintercept = as.Date("2022-09-19"), col = "black")+
+  geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
+  geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
+  geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
   scale_y_continuous(limits = c(0, 78), expression('Hummock Soil Water Content (%)'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
@@ -609,16 +602,20 @@ temp_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Winter"),
             alpha = 0.2, inherit.aes = FALSE)+
   
-  geom_line(aes(y = TS_2_05_1, linetype = "5cm Soil Temperature"), color = "navy")+
-  geom_line(aes(y = TA, linetype = "Air Temperature"), color = "navy")+
+  geom_line(aes(y = TS_2_05_1, linetype = "5cm Soil Temp"), color = "navy")+
+  geom_line(aes(y = TA, linetype = "Air Temp"), color = "navy")+
   geom_hline(yintercept=0, col="black")+
+  geom_vline(xintercept = as.Date("2022-09-19"), col = "black")+
+  geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
+  geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
+  geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
   scale_y_continuous(limits = c(-40, 20), expression('Temperature ('*degree*'C)'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
   scale_linetype_manual(name = NULL,
-            values = c("Air Temperature" = "solid",
-                      "5cm Soil Temperature" = "dashed"),
-            breaks = c("Air Temperature", "5cm Soil Temperature"))+
+            values = c("Air Temp" = "solid",
+                      "5cm Soil Temp" = "dashed"),
+            breaks = c("Air Temp", "5cm Soil Temp"))+
   scale_fill_manual(name = NULL,
             values = c("Spring Thaw" = "mediumorchid",
                       "Fall Senescence" = "orange",
@@ -627,7 +624,176 @@ temp_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
             breaks = c("Spring Thaw", "Fall Senescence", "Winter", "Growing Season"))
 
 temp_ts
+```
 
+
+## Flux Timeseries
+```{r}
+
+gpp_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  
+    geom_rect(data = thaw_23, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = thaw_24, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = thaw_25, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  
+      geom_rect(data = gs_23, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Growing Season"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = gs_24, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Growing Season"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = gs_25, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Growing Season"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  
+      geom_rect(data = fall_22, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Fall Senescence"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = fall_23, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Fall Senescence"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = fall_24, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Fall Senescence"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  
+        geom_rect(data = winter_22, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Winter"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = winter_23, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Winter"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = winter_24, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Winter"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  
+  geom_point(aes(y = GPP_F*60*60*24*(1/1e6)*12), color = "navy")+
+  geom_hline(yintercept=0, col="black")+
+  geom_vline(xintercept = as.Date("2022-09-19"), col = "black")+
+  geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
+  geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
+  geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
+  scale_y_continuous(limits = c(-1, 4.2), expression('GPP (g C'~m^-2~d^-1*')'))+
+  scale_x_date(name = NULL,
+                   breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
+  scale_linetype_manual(name = NULL,
+            values = c("Air Temp" = "solid",
+                      "5cm Soil Temp" = "dashed"),
+            breaks = c("Air Temp", "5cm Soil Temp"))+
+  scale_fill_manual(name = NULL,
+            values = c("Spring Thaw" = "mediumorchid",
+                      "Fall Senescence" = "orange",
+                      "Winter" = "cyan3",
+                      "Growing Season" = "green4"),
+            breaks = c("Spring Thaw", "Fall Senescence", "Winter", "Growing Season"))
+
+gpp_ts
+
+
+reco_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
+  theme_bw()+
+  
+    geom_rect(data = thaw_23, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = thaw_24, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = thaw_25, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  
+      geom_rect(data = gs_23, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Growing Season"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = gs_24, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Growing Season"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = gs_25, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Growing Season"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  
+      geom_rect(data = fall_22, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Fall Senescence"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = fall_23, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Fall Senescence"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = fall_24, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Fall Senescence"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  
+        geom_rect(data = winter_22, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Winter"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = winter_23, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Winter"),
+            alpha = 0.2, inherit.aes = FALSE)+
+      geom_rect(data = winter_24, 
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Winter"),
+            alpha = 0.2, inherit.aes = FALSE)+
+  
+  geom_point(aes(y = RECO*60*60*24*(1/1e6)*12), color = "navy")+
+  geom_hline(yintercept=0, col="black")+
+  geom_vline(xintercept = as.Date("2022-09-19"), col = "black")+
+  geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
+  geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
+  geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
+  scale_y_continuous(limits = c(-0.3, 2.4), expression('RECO (g C'~m^-2~d^-1*')'))+
+  scale_x_date(name = NULL,
+                   breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
+  scale_linetype_manual(name = NULL,
+            values = c("Air Temp" = "solid",
+                      "5cm Soil Temp" = "dashed"),
+            breaks = c("Air Temp", "5cm Soil Temp"))+
+  scale_fill_manual(name = NULL,
+            values = c("Spring Thaw" = "mediumorchid",
+                      "Fall Senescence" = "orange",
+                      "Winter" = "cyan3",
+                      "Growing Season" = "green4"),
+            breaks = c("Spring Thaw", "Fall Senescence", "Winter", "Growing Season"))
+
+reco_ts
+
+
+```
+
+
+
+```{r}
+png(filename = './png/co2_ts.png',width = 10,height = 3,units = 'in',res = 2000)
+co2_ts
+dev.off()
+
+png(filename = './png/ch4_ts.png',width = 10,height = 3,units = 'in',res = 2000)
+ch4_ts
+dev.off()
+
+png(filename = './png/swc_ts.png',width = 10,height = 3,units = 'in',res = 2000)
+swc_ts
+dev.off()
+
+png(filename = './png/sw_ts.png',width = 10,height = 3,units = 'in',res = 2000)
+sw_ts
+dev.off()
+
+png(filename = './png/snow_ts.png',width = 10,height = 3,units = 'in',res = 2000)
+snow_ts
+dev.off()
+
+png(filename = './png/temp_ts.png',width = 10,height = 3,units = 'in',res = 2000)
+temp_ts
+dev.off()
+
+png(filename = './png/gpp_reco_ts.png',width = 10,height = 6,units = 'in',res = 2000)
+gpp_ts / reco_ts + plot_layout(guides = "collect", axes = "collect")
+dev.off()
 
 
 ```

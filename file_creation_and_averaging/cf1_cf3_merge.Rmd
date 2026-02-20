@@ -47,14 +47,8 @@ library(RColorBrewer)
 
 ```{r, warning=FALSE, echo=FALSE}
 
-# df23 <- fread('./data/CA-CF3_HH_202208062330_202312301700.csv', na.strings="-9999")
-# 
-# df24 <- fread('./data/CA-CF3_HH_202312301700_202412311700.csv', na.strings="-9999")
-
-#df3 <- rbind(df23, df24, df25, fill=TRUE)
-
-# Using new data here!! used summer 2025 to regapfill previous summers so numbers will likely change
-df3 <- fread('./data/CA-CF3_HH_INTERNAL_202208062330_202601010000.csv', na.strings="-9999")
+# Using Kyle's error dataset here!!
+df3 <- fread('./data/error_churchill.csv', na.strings=c("-9999", "NA"))
 
 ```
 
@@ -286,16 +280,33 @@ date = unique(df$date)
 #average entire dataframe with tighter threshold
 df_avg = as.data.frame(date)
 df_avg <- timeAverage(df, avg.time = "day", data.thresh = 50)
+df_avg_sd <- timeAverage(df, avg.time = "day", data.thresh = 50, statistic = "sd")
 
 #average dataframe with lighter threshold to get good nighttime data coverage
 df_avg_night = as.data.frame(date)
 df_avg_night <- timeAverage(df, avg.time = "day", data.thresh = 10)
+df_avg_night_sd <- timeAverage(df, avg.time = "day", data.thresh = 10, statistic = "sd")
 
 #add nighttime average data back into full dataset
 df_avg$FC_night = df_avg_night$FC_night
 df_avg$FC_night_F = df_avg_night$FC_night_F
 
+# add standard deviations into full dataset
+df_avg$FC_night_sd = df_avg_night_sd$FC_night
+df_avg$FC_night_F_sd = df_avg_night_sd$FC_night_F
+
+df_avg$FC_sd = df_avg_sd$FC
+df_avg$FC_F_sd = df_avg_sd$FC_F
+
+df_avg$FCH4_sd = df_avg_sd$FC
+df_avg$FCH4_F_sd = df_avg_sd$FC_F
+
+
 rm(df_avg_night)
+rm(df_avg_sd)
+rm(df_avg_night_sd)
+
+# Remove HH timestamp
 
 df_avg <- select(df_avg, -c('TIMESTAMP','TIMESTAMP_END', 'TIMESTAMP_START'))
 
