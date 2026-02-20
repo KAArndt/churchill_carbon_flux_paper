@@ -58,6 +58,6 @@ rsconnect/
 /png
 
 # pdfs
-.pdf
+*.pdf
 
 
