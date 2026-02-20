@@ -37,7 +37,6 @@ df_nogs$FCH4 <- df_nogs$FCH4 * (1/1000)
 #%>%
   #filter(season_name != "Growing Season")
 
-#%>% filter(TS_1_0_1 < 0)
 
 
 ```
@@ -260,7 +259,7 @@ dev.off()
 
 ```
 
-Visualize model outliars
+Visualize model outliers
 ```{r}
 
 ggplot(data = df_nogs)+
