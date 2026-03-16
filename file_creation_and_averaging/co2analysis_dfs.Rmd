@@ -75,21 +75,21 @@ ggplot(data = df_avg_23_24_25)+
 
 Last days:
 
-Start of fall 1: 09-18-2022; DOY 
+Start of fall 1: 09-18-2022; DOY 261
 End of fall 1: 10-15-2022; DOY 288
-end of winter 1, 05-04-23
-end of snowmelt 1, 06-11-23
-end of growing season 1, 09-05-23
+end of winter 1, 05-04-23; DOY 124
+end of snowmelt 1, 06-11-23; DOY 162
+end of growing season 1, 09-05-23; DOY 248
 
-end of fall 2, 10-21-23
+end of fall 2, 10-21-23; DOY 294
 End of winter 2: 05-14-2024; DOY 135
 End of snowmelt 2: 06-17-2024; DOY 169
 End of growing season 2: 09-12-2024; DOY 256
 
 End of fall 3: 10-19-24; DOY 293
-End of winter 3:05-21-2025 ; DOY 
-End of snowmelt 3: 06-16-2025 ; DOY 
-End of growing season 3: 09-10-25; DOY
+End of winter 3:05-21-2025 ; DOY 141
+End of snowmelt 3: 06-16-2025 ; DOY 167
+End of growing season 3: 09-10-25; DOY 253
 
 
 ```{r}
