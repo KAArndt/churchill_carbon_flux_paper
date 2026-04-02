@@ -35,7 +35,7 @@ Timeseries of GPP, ER, NEE, and CH4
 ```{r}
 
 carbonts <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   geom_point(aes(y = FC_F*60*60*24*(1/1e6)*12, shape = "Gapfilled"), color = "navy")+
   geom_point(aes(y = FC*60*60*24*(1/1e6)*12, shape = "Measured"), color = "navy")+
   geom_hline(yintercept=0, col="black")+
@@ -50,7 +50,7 @@ carbonts <- ggplot(data = df_avg_23_24, aes(x=date))+
 carbonts
 
 methanets <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   geom_point(aes(y = FCH4_F*60*60*24*(1/1e9)*12*13, shape = "Gapfilled"), color = "mediumorchid")+
   geom_point(aes(y = FCH4*60*60*24*(1/1e9)*12*13, shape = "Measured"), color = "mediumorchid")+
   geom_hline(yintercept=0, col="black")+
@@ -77,7 +77,7 @@ methanets
 
 ```{r}
 
-soiltempts <- ggplot(data = df_avg_23_24)+ theme_bw()+
+soiltempts <- ggplot(data = df_avg_23_24)+ theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   geom_hline(yintercept = 0)+
   geom_line(aes(day,TS_2_0_1,color='0 cm'))+
   geom_line(aes(day,TS_2_05_1,color='5 cm'))+
@@ -220,11 +220,11 @@ gs_25 <- data.frame(
 ```
 
 
-## Met Timeseries
+## Main Figure
 ```{r}
 
 co2_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   
     geom_rect(data = thaw_23, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
@@ -290,7 +290,7 @@ co2_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
 co2_ts
 
 ch4_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   
     geom_rect(data = thaw_23, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
@@ -358,7 +358,7 @@ ch4_ts
 
 
 sw_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   
     geom_rect(data = thaw_23, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
@@ -427,7 +427,7 @@ sw_ts
 
 
 snow_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   
     geom_rect(data = thaw_23, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
@@ -493,7 +493,7 @@ snow_ts
 
 
 swc_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   
     geom_rect(data = thaw_23, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
@@ -541,7 +541,7 @@ swc_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
   geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
   geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
-  scale_y_continuous(limits = c(0, 78), expression('Hummock Soil Water Content (%)'))+
+  scale_y_continuous(limits = c(0, 78), expression('Soil Water Content (%)'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
   # scale_shape_manual(name = NULL,
@@ -560,7 +560,7 @@ swc_ts
 
 
 temp_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   
     geom_rect(data = thaw_23, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
@@ -609,7 +609,7 @@ temp_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
   geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
   geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
-  scale_y_continuous(limits = c(-40, 20), expression('Temperature ('*degree*'C)'))+
+  scale_y_continuous(limits = c(-36, 24), expression('Temperature ('*degree*'C)'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
   scale_linetype_manual(name = NULL,
@@ -627,11 +627,20 @@ temp_ts
 ```
 
 
-## Flux Timeseries
+```{r}
+
+png(filename = './png/all_2_ts.png',width = 11,height = 11.5,units = 'in',res = 2000)
+co2_ts / ch4_ts / temp_ts / snow_ts  + plot_layout(guides = "collect", axes = "collect")
+dev.off()
+
+```
+
+
+## SI Figure, GPP/NEE
 ```{r}
 
 gpp_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   
     geom_rect(data = thaw_23, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
@@ -679,7 +688,7 @@ gpp_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
   geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
   geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
-  scale_y_continuous(limits = c(-1, 4.2), expression('GPP (g C'~m^-2~d^-1*')'))+
+  scale_y_continuous(limits = c(-0.5, 4.2), expression('GPP (g C'~m^-2~d^-1*')'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
   scale_linetype_manual(name = NULL,
@@ -697,7 +706,7 @@ gpp_ts
 
 
 reco_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
-  theme_bw()+
+  theme_bw() + theme(axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 16),    axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   
     geom_rect(data = thaw_23, 
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = "Spring Thaw"),
@@ -745,7 +754,7 @@ reco_ts <- ggplot(data = df_avg_23_24, aes(x=date))+
   geom_vline(xintercept = as.Date("2023-09-06"), col = "black")+
   geom_vline(xintercept = as.Date("2024-09-13"), col = "black")+
   geom_vline(xintercept = as.Date("2025-09-10"), col = "black")+
-  scale_y_continuous(limits = c(-0.3, 2.4), expression('RECO (g C'~m^-2~d^-1*')'))+
+  scale_y_continuous(limits = c(-0.5, 4.2), expression('RECO (g C'~m^-2~d^-1*')'))+
   scale_x_date(name = NULL,
                    breaks = seq(as.Date("2022-09-01"), as.Date("2025-09-01"), by = "4 months"), date_labels = "%b %Y")+
   scale_linetype_manual(name = NULL,

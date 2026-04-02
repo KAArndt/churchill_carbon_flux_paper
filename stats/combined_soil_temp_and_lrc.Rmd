@@ -13,6 +13,7 @@ library(openair)
 library(bigleaf)
 library(dplyr)
 library(patchwork)
+library(ggsci)
 ```
 
 
@@ -71,7 +72,6 @@ ppfd = gs$PPFD_IN
 
 line = α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-mean(Reco)
 
-mean(gs$RECO)
 
 #plot the fit data vs the real PAR, NEE relationship
 lrc <- ggplot(data = gs)+
@@ -82,25 +82,23 @@ lrc <- ggplot(data = gs)+
     axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
     axis.title.y = element_text(size = 14),axis.title.x = element_text(size = 14))+
   geom_hline(aes(yintercept = 0),col = 'black')+
-  geom_point(aes(PPFD_IN,FC, col = DOY))+
-  scale_color_gradient(low = "navy", high = "salmon", limits = c(1, 365))+
-  geom_line(aes(PPFD_IN,line*-1),col='black', linewidth = 1.2)+
-  geom_smooth(formula = y ~ α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-Reco,col='black', aes(PPFD_IN,FC),method = 'lm')+
+  geom_point(aes(PPFD_IN,FC), color = "#440154FF")+
+  # scale_color_viridis_c(option = "magma", limits = c(1,365))+
+  geom_line(aes(PPFD_IN,line*-1),col='', linewidth = 1.2)+
+ # geom_smooth(formula = y ~ α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-Reco,col='black', aes(PPFD_IN,FC),method = 'lm')+
 #  geom_line(aes(PPFD_IN,lrfit*-1),col='red')+
-#  scale_color_viridis_c()+
   annotate("text", 
            x = Inf, y = Inf, 
            hjust = 1.1, vjust = 1.3,
-           label = paste0("\u03B1 = ", round(alpha, 3), "\nGPP ref = ", round(GPP_ref, 2)),
+           label = paste0("\u03B1 = ", round(alpha, 3), "\nGPP ref = ", round(GPP_ref, 2), "\nR² = 0.77"),
            size = 5)+
   labs(
-    y = expression('NEE ('*mu*mol~m^-2~s^-1*')'),
+    y = expression('RECO ('*mu*mol~m^-2~s^-1*')'),
     x = expression('PAR In ('*mu*'mol m'^-2*'s'^-1*')'),
     title = "c) Light Response Curve",
     subtitle = "Growing Season Only")
 lrc
 ```
-
 
 
 
@@ -228,18 +226,18 @@ co2model_ngs <- ggplot(data=df_nogs)+
   geom_vline(xintercept = 0)+
   geom_point(aes(x=TS_1_0_1, y=FC_night, col = DOY, #shape = factor(season_year)
                  ))+
-  geom_errorbar(
-    aes(x = TS_1_0_1,
-        ymin = FC_night - FC_night_sd,
-        ymax = FC_night + FC_night_sd),
-    width = 0.2
-  )+
+  # geom_errorbar(
+  #   aes(x = TS_1_0_1,
+  #       ymin = FC_night - FC_night_sd,
+  #       ymax = FC_night + FC_night_sd),
+  #   width = 0.2
+  # )+
   geom_line(aes(x = TS_1_0_1, y = predicted))+
-  scale_color_gradient(low = "navy", high = "salmon")+
+  scale_color_viridis_c(option = "magma")+
   labs(
     x = expression("Surface Soil Temperature ("*degree*"C)"),
-    y = expression("NEE ("*mu*mol~m^-2~s^-1*")"),
-    title = expression("a) Nighttime NEE vs. Soil Temperature"))+
+    y = expression("RECO ("*mu*mol~m^-2~s^-1*")"),
+    title = expression("a) Ecosystem Respiration vs. Soil Temperature"))+
  # scale_shape_manual(name = "Year", values = c(16, 17))+
   scale_x_continuous(limits=c(-11,25))+
   scale_y_continuous(limits=c(-0.5,3))+
@@ -261,6 +259,10 @@ co2model_ngs
 
 
 
+
+
+
+
 #Methane vs. soil temp
 
 label_ch4 <- bquote(y == .(round(a_ch4_ngs, 3)) * e^{.(round(b_ch4_ngs, 3)) * x})
@@ -279,7 +281,7 @@ ch4model <- ggplot(data=df_nogs)+
   #   width = 0.2
   # )+
   geom_line(aes(x = TS_1_0_1, y = predicted_ch4))+
-scale_color_gradient(low = "navy", high = "salmon")+
+  scale_color_viridis_c(option = "magma")+
   labs(
     x = expression("Surface Soil Temperature ("*degree*"C)"),
     y = expression("CH "[4] * " Flux ("*mu*mol~m^-2~s^-1*")"),

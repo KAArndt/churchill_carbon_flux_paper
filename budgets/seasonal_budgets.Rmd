@@ -160,11 +160,11 @@ theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 1
                      ymax = integral_value.co2 + error.co2),
                  position = position_dodge(width = 0.9), 
                  width = 0.5,
-                 height = 01, # Controls the width of the error bar 'caps'
+                 height = 0.2, # Controls the width of the error bar 'caps'
                  colour = "black")+
-  geom_label(aes(label = integral_value.co2, vjust = ifelse(integral_value.co2 >= 0, -1, 1.5)), colour = "black", fill ="white",
+  geom_label(aes(label = integral_value.co2, vjust = ifelse(integral_value.co2 >= 0, -0.7, ifelse((integral_value.co2 < -60 & integral_value.co2 > -65), 1.9, 1.5))), colour = "black", fill ="white",
              position = position_dodge2(width = 0.9), size = 3)+
-  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
+  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "mediumorchid"),
                     labels = c("1" = "2022/2023", "2" = "2023/2024", "3" = "2024/2025"))+
   scale_y_continuous(limits=c(-90, 26)) +
   scale_x_discrete(limits = c("Fall Senescence ", "Winter ", "Snow Melt ", "Growing Season "), 
@@ -172,9 +172,6 @@ theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 1
 
 co2seasons
 
-# png(filename = './co2seasons.png',width = 7.3,height = 4.1,units = 'in',res = 2000)
-# co2seasons
-# dev.off()
 ```
 
 
@@ -188,7 +185,7 @@ theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 1
   axis.title = element_text(size = 16), legend.title = element_blank(), legend.text = element_text(size = 12))+
   geom_hline(yintercept=0, colour="black")+
   geom_col(position = position_dodge2(width = 0.9))+
-  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
+  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "mediumorchid"),
                     labels = c("1" = "2022/2023", "2" = "2023/2024", "3" = "2024/2025"))+
   labs(
     x = "",
@@ -201,16 +198,13 @@ theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 1
                  width = 0.5,
                  height = 0.2, # Controls the width of the error bar 'caps'
                  colour = "black")+
-  geom_label(aes(label = integral_value.ch4, vjust = -0.7), ,
+  geom_label(aes(label = integral_value.ch4, vjust = ifelse(integral_value.ch4 >= 0, -0.7, ifelse((integral_value.ch4 > 60 & integral_value.ch4 > 65), 1.8, 1.5))), ,
             position = position_dodge2(width = 0.9), colour = "black", fill ="white", size = 3)+
   scale_y_continuous(limits=c(0, 6), expand = c(0,0))+
   scale_x_discrete(limits = c("Fall Senescence ", "Winter ", "Snow Melt ", "Growing Season "),labels = function(x) str_wrap(recode(x, "Snow Melt " = "Spring Thaw"), width = 10))
 
 ch4seasons
 
-# png(filename = './ch4seasons.png',width = 7.3,height = 4.1,units = 'in',res = 2000)
-# ch4seasons
-# dev.off()
  
 ```
 
@@ -219,7 +213,7 @@ Grid Plot
 
 ```{r}
 
-png(filename = './png/seasongrid.png',width = 14,height = 9,units = 'in',res = 2000)
+png(filename = './png/seasongrid.png',width = 11,height = 7,units = 'in',res = 2000)
 co2seasons + ch4seasons + plot_layout(guides = "collect", axes = "collect")
 dev.off()
 
@@ -358,7 +352,7 @@ theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 1
   ) +
   geom_label(aes(label = integral_value.gpp, vjust = ifelse(integral_value.gpp >= 0, -0.3, 1.5)), colour = "black", fill ="white",
              position = position_dodge2(width = 0.9), size = 3)+
-  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
+  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "mediumorchid"),
                     labels = c("1" = "2022/2023", "2" = "2023/2024", "3" = "2024/2025"))+
   scale_y_continuous(limits=c(-215, 10), expand = c(0,0)) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
@@ -377,7 +371,7 @@ theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 1
   axis.title = element_text(size = 16),  legend.title = element_blank(), legend.text = element_text(size = 12))+
   geom_hline(yintercept=0, colour="black")+
   geom_col(position = position_dodge2(width = 0.9))+
-  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "navy"),
+  scale_fill_manual(values = c("1" = "turquoise", "2" = "salmon", "3" = "mediumorchid"),
                     labels = c("1" = "2022/2023", "2" = "2023/2024", "3" = "2024/2025"))+
   labs(
     x = "",
@@ -399,7 +393,7 @@ Grid Plot
 ```{r}
 
 
-png(filename = './png/seasongrid_gpp_reco.png',width = 14,height = 7.2,units = 'in',res = 2000)
+png(filename = './png/seasongrid_gpp_reco.png',width = 11,height = 5.8,units = 'in',res = 2000)
 gppseasons + recoseasons + plot_layout(guides = "collect", axes = "collect")
 dev.off()
 

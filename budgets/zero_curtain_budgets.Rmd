@@ -40,7 +40,7 @@ df_all <- fread("./output_files/three_years_HH.csv")
 
 
 ## Define Zero Curtain
-
+Used CS655 soil temp 2_1_1
 ```{r}
 
 
@@ -141,7 +141,16 @@ seasonal_integrals_ch4 <- seasonal_integrals_ch4(df_all)
 ```
 
 
+## SWC Soil temp and therm profile soil temp comparison
 
+```{r}
+
+ggplot(data = df_all)+
+  geom_point(aes(x = TS_2_05_1, y = TS_4_1_1))
+
+cor.test(df_all$TS_2_05_1, df_all$TS_4_1_1)
+
+```
 
 
 

@@ -18,6 +18,7 @@ library(tidyverse)
 library(gridExtra) 
 library(patchwork)
 library(plotrix) # standard error function
+library(ggborderline) # for borders around lines in plots
 
 ```
 
@@ -29,9 +30,16 @@ df_23_24 <- fread("./output_files/three_years_HH.csv")
 
 ```
 
+
 # Create sequential DAY within seasonal groupings
 
 ```{r}
+
+df_23_24$DOY <- yday(df_23_24$TIMESTAMP)
+
+df_23_24$sept_DOY <- ifelse(df_23_24$DOY >= 244,
+                    df_23_24$DOY - 243,
+                    df_23_24$DOY + (365 - 243))
 
 df_23_24 <- df_23_24 %>%
   mutate(date = as.Date(TIMESTAMP)) %>%
@@ -40,6 +48,17 @@ df_23_24 <- df_23_24 %>%
     DOSY = as.integer(date - min(date)) + 1
   ) %>%
   ungroup()
+
+df_23_24$sept_DOY <- ifelse(df_23_24$DOSY > 300 & df_23_24$sept_DOY < 100,
+                            df_23_24$sept_DOY + 365,
+                            df_23_24$sept_DOY)
+
+#dataframe to label days of winter as months
+
+first_of_month <- data.frame(
+  DOW = c(1, 96, 124, 155, 185, 216, 246, 277, 308, 338, 4, 34),
+  Label = c("Jan 1", "Feb 1", "Mar 1", "Apr 1", "May 1", "Jun 1", "Jul 1", "Aug 1", "Sep 1", "Oct 1", "Nov 1", "Dec 1")
+)
 
 
 df_23_24 <- df_23_24 %>%
@@ -64,8 +83,11 @@ df_23_24$season_name <- ifelse(df_23_24$season_name== "Snow Melt", "Spring Thaw"
 Plot
 ```{r}
 
+df_23_24$full_year <- as.factor(df_23_24$full_year)
+
 ggplot(data = df_23_24)+
-  geom_point(aes(DOSY, cumulative_co2, color = season_name))+
+  # geom_line(aes(sept_DOY, cumulative_co2, linetype = full_year), color = "black", linewidth = 1.7)+
+  geom_borderline(aes(sept_DOY, cumulative_co2, color = season_name, linetype = full_year), linewidth = 1.5, bordercolour = "navy")+
   geom_hline(yintercept = 0)+
   scale_color_manual(name = NULL,
             values = c("Spring Thaw" = "mediumorchid",
@@ -73,13 +95,22 @@ ggplot(data = df_23_24)+
                       "Winter" = "turquoise3",
                       "Growing Season" = "green4"),
             breaks = c("Fall Senescence", "Winter", "Spring Thaw", "Growing Season"))+
+  scale_linetype_manual(name = NULL,
+            values = c("1" = 1,
+                      "2" = 2,
+                      "3" = 3),
+            breaks = c("1", "2", "3"))+
+  scale_x_continuous(
+    breaks = c(1, 61, 122, 183, 244, 305, 365),
+    labels = c("Sept 1", "Nov 1", "Jan 1", "Mar 1", "May 1", "Jul 1", "Sept 1")
+  )+
   labs(
-    y = expression("Cumulative NEE (gC"~m^-2~y^-1*")"),
-    x = expression("Day of seasonal year (??)")
+    y = expression("Cumulative NEE (g C"~m^-2~y^-1*")"),
+    x = NULL
   )
 
 ggplot(data = df_23_24)+
-  geom_point(aes(DOSY, cumulative_ch4, color = season_name))+
+  geom_point(aes(sept_DOY, cumulative_ch4, color = season_name))+
   geom_hline(yintercept = 0)+
   scale_color_manual(name = NULL,
             values = c("Spring Thaw" = "mediumorchid",
@@ -87,9 +118,13 @@ ggplot(data = df_23_24)+
                       "Winter" = "turquoise3",
                       "Growing Season" = "green4"),
             breaks = c("Fall Senescence", "Winter", "Spring Thaw", "Growing Season"))+
+  scale_x_continuous(
+    breaks = c(1, 61, 122, 183, 244, 305, 365),
+    labels = c("Sept 1", "Nov 1", "Jan 1", "Mar 1", "May 1", "Jul 1", "Sept 1")
+  )+
   labs(
-    y = expression("Cumulative CH4 Flux (gC"~m^-2~y^-1*")"),
-    x = expression("Day of seasonal year (??)")
+    y = expression("Cumulative CH4 Flux (g C"~m^-2~y^-1*")"),
+    x = NULL
   )
 
 

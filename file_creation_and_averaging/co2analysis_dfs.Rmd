@@ -50,6 +50,17 @@ df_23_24_25 <- subset(df, ((df$TIMESTAMP > as.POSIXct("2022-09-18 00:00")) & (df
 
 ```
 
+How much data was removed by cleaning?
+```{r}
+
+percent_removed_co2 <- (sum(is.na(df_23_24_25$FC)) - sum(is.na(df_23_24_25$FC_UC)))/sum(!is.na(df_23_24_25$FC))
+
+percent_removed_ch4 <- (sum(is.na(df_23_24_25$FCH4)) - sum(is.na(df_23_24_25$FCH4_UC)))/sum(!is.na(df_23_24_25$FCH4))
+
+
+```
+
+
 Plot for visualizing seasonal changes
 ```{r}
 

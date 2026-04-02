@@ -152,7 +152,7 @@ tair <- ggplot(data = df_monthly_avg_winter)+
   scale_color_manual(name = " ",
             values = c("1" = "turquoise3", 
                       "2" = "salmon",
-                      "3" = "navy"),
+                      "3" = "mediumorchid"),
             breaks = c("1", "2", "3"))
 ```
 
@@ -177,7 +177,7 @@ winterts <- ggplot(data = df_avg_winter)+
                         values = c("Soil Temp" = "solid",
                           "Air Temp"="twodash"))+
   scale_color_manual(name = " ",
-            values = c("2025" = "navy",
+            values = c("2025" = "mediumorchid",
                       "2024" = "salmon",
                       "2023" = "turquoise3"),
             breaks = c("2023", "2024", "2025"))+
@@ -215,7 +215,7 @@ wintersd <- ggplot(data = df_avg_winter)+
     breaks = first_of_month$DOW,
     labels = first_of_month$Label)+     
   scale_color_manual(name = " ",
-            values = c("2025" = "navy",
+            values = c("2025" = "mediumorchid",
                       "2024" = "salmon", 
                       "2023" = "turquoise3"),
             breaks = c("2023", "2024", "2025"))+ 
