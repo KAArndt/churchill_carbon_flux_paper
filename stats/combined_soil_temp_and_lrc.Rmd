@@ -82,8 +82,8 @@ lrc <- ggplot(data = gs)+
     axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), 
     axis.title.y = element_text(size = 14),axis.title.x = element_text(size = 14))+
   geom_hline(aes(yintercept = 0),col = 'black')+
-  geom_point(aes(PPFD_IN,FC, color = DOY))+
-  scale_color_viridis_c(option = "magma", limits = c(1,365))+
+  geom_point(aes(PPFD_IN,FC), color = "#FF573D", alpha = 0.3)+
+  # scale_color_viridis_c(option = "magma", limits = c(1,365))+
   geom_line(aes(PPFD_IN,line*-1),col='black', linewidth = 1.2)+
  # geom_smooth(formula = y ~ α*ppfd/(1-(ppfd/PPFDref)+α*ppfd/GPPref)-Reco,col='black', aes(PPFD_IN,FC),method = 'lm')+
 #  geom_line(aes(PPFD_IN,lrfit*-1),col='red')+
@@ -93,7 +93,7 @@ lrc <- ggplot(data = gs)+
            label = paste0("\u03B1 = ", round(alpha, 3), "\nGPP ref = ", round(GPP_ref, 2), "\nR² = 0.77"),
            size = 5)+
   labs(
-    y = expression('RECO ('*mu*mol~m^-2~s^-1*')'),
+    y = expression('NEE ('*mu*mol~m^-2~s^-1*')'),
     x = expression('PAR In ('*mu*'mol m'^-2*'s'^-1*')'),
     title = "c) Light Response Curve",
     subtitle = "Growing Season Only")

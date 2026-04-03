@@ -24,6 +24,7 @@ library(plotrix) # standard error function
 
 df_avg_23_24 <- fread('./output_files/three_years_daily_avg.csv')
 
+
 ```
 
 # Season Averages
@@ -35,7 +36,7 @@ Averages over each season within each year, and includes no. of days in the seas
 
 df_avg_biomet <- df_avg_23_24 %>%
   group_by(season) %>%
-  summarize(
+  dplyr::summarize(
     nee = round(mean(FC, na.rm = TRUE), 3),
     tair = round(mean(TA, na.rm = TRUE), 2),
     tsoil5 = round(mean(TS_2_05_1, na.rm = TRUE), 2),
@@ -47,7 +48,7 @@ df_avg_biomet <- df_avg_23_24 %>%
     ch4 = round(mean(FCH4, na.rm = TRUE), 2),
     ch4_err = round(mean(RAND_ERR_CH4_FLUX, na.rm = TRUE), 2),
     co2_err = round(mean(RAND_ERR_CO2_FLUX, na.rm = TRUE), 2),
-    data_coverage = (sum(is.na(FC))),
+    data_coverage = (sum(!is.na(SWC_2_1_1))),
     nee.se = round(std.error(FC, na.rm = TRUE), 2),
     tair.se = round(std.error(TA, na.rm = TRUE), 2),
     tsoil5.se = round(std.error(TS_2_05_1, na.rm = TRUE), 2),
@@ -69,20 +70,20 @@ df_avg_biomet <- df_avg_23_24 %>%
   rad_with_se = paste0(rad, " ± ", rad.se),
   dsnow_with_se = paste0(dsnow, " ± ", dsnow.se)
   )%>%
-  select(season, co2_err, ch4_err, nee_with_se, tair_with_se, tsoil5_with_se, swc_with_se, swc2_with_se, ws_with_se, fch4_with_se, rad_with_se, dsnow_with_se, data_coverage) %>%
+  select(season, co2_err, ch4_err, nee_with_se, tair_with_se, tsoil5_with_se, swc_with_se, swc2_with_se, ws_with_se, fch4_with_se, rad_with_se, dsnow_with_se, data_coverage)%>%
     arrange(factor(season, levels = c("Fall Senescence 2022", "Winter 2023", "Snow Melt 2023", "Growing Season 2023", "Fall Senescence 2023", "Winter 2024", "Snow Melt 2024", "Growing Season 2024", "Fall Senescence 2024", "Winter 2025", "Snow Melt 2025", "Growing Season 2025")))
 
 
 season_counts <- 
   df_avg_23_24 %>%
-  filter(season %in% c("Fall Senescence 2022", "Winter 2023", 
+  dplyr::filter(season %in% c("Fall Senescence 2022", "Winter 2023", 
                        "Snow Melt 2023", "Growing Season 2023", 
                        "Fall Senescence 2023", "Winter 2024", 
                        "Snow Melt 2024", "Growing Season 2024", 
                        "Fall Senescence 2024", "Winter 2025", 
                        "Snow Melt 2025", "Growing Season 2025")) %>%
-  count(season) %>%
-    arrange(factor(season, levels = c("Fall Senescence 2022", "Winter 2023", 
+  dplyr::count(season) %>%
+    dplyr::arrange(factor(season, levels = c("Fall Senescence 2022", "Winter 2023", 
                        "Snow Melt 2023", "Growing Season 2023", 
                        "Fall Senescence 2023", "Winter 2024", 
                        "Snow Melt 2024", "Growing Season 2024", 
@@ -107,7 +108,7 @@ Averages data for each season across entire timeseries
 #Averages over each season within each year, and includes no. of days
 df_avg_both <- df_avg_23_24 %>%
   group_by(season_name) %>%
-  summarize(
+  dplyr::summarize(
     nee = round(mean(FC, na.rm = TRUE), 3),
     ch4 = round(mean(FCH4, na.rm = TRUE), 3),
     tair = round(mean(TA, na.rm = TRUE), 2),

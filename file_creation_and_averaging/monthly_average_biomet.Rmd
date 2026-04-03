@@ -38,7 +38,7 @@ Average by Month
 
 df_avg_biomet <- df_avg_23_24 %>%
   group_by(month, year) %>%
-  summarize(
+  dplyr::summarize(
     nee = round(mean(FC, na.rm = TRUE), 3),
     ch4 = round(mean(FCH4, na.rm = TRUE), 3),
     gpp = round(mean(GPP_F, na.rm = TRUE), 3),
