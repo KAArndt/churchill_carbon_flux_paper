@@ -7,7 +7,7 @@ library(dplyr)
 Sys.setenv(TZ = 'UTC')
 
 #Load in data
-df = fread('./CA-CF3_HH_INTERNAL_202208062330_202601010000.csv',na.strings = c('-9999'))
+df = fread('./data/CA-CF3_HH_INTERNAL_202208062330_202601010000.csv',na.strings = c('-9999'))
 
 df$date = as.POSIXct(as.character(df$TIMESTAMP_END),format='%Y%m%d%H%M')
 summary(df)
@@ -152,6 +152,24 @@ df$FC_F.rand.error = ifelse(complete.cases(df$FC),df$RAND_ERR_CO2_FLUX,df$sd.rf.
 df$count.nee       = ifelse(is.na(df$FC),1,0)
 df$rmse.nee        = ifelse(is.na(df$FC),rmse.nee,NA)
 
+#create validation dataset
+valset = cc
+valset$valco2 = ifelse(samp == F,'validation','train')
+valset = valset[,c(1,14)]
+
+df = merge(df,valset,by = 'date',all = T)
+
+val = subset(df,df$valco2 == 'validation')
+mod = lm(val$median.rf.nee ~ val$FC)
+
+summary(mod)
+
+ggplot(data = val)+theme_bw()+
+  geom_vline(xintercept = 0)+geom_hline(yintercept = 0)+
+  geom_point(aes(FC,median.rf.nee))+
+  geom_abline(slope = 1,intercept = 0,col='red',lty=2)+
+  scale_x_continuous(limits = c(-8,10),expression("Eddy Covariance NEE ("*mu*mol~m^-2~s^-1*")"))+
+  scale_y_continuous(limits = c(-8,10),expression("Random Forest NEE ("*mu*mol~m^-2~s^-1*")"))
 
 # CH4 #####################################################################################
 #get to gap filling
@@ -271,6 +289,26 @@ df$FCH4_F.rand.error = ifelse(complete.cases(df$FCH4),df$RAND_ERR_CH4_FLUX,df$sd
 df$count             = ifelse(is.na(df$FCH4),1,0)
 df$rmse.ch4          = ifelse(is.na(df$FCH4),rmse.ch4,NA)
 
+#create validation dataset
+valset = cc.ch4
+valset$valch4 = ifelse(samp == F,'validation','train')
+valset = valset[,c(1,14)]
+
+df = merge(df,valset,by = 'date',all = T)
+
+val = subset(df,df$valch4 == 'validation')
+mod = lm(val$median.rf.ch4 ~ val$FCH4)
+
+summary(mod)
+
+ggplot(data = val)+theme_bw()+
+  geom_vline(xintercept = 0)+geom_hline(yintercept = 0)+
+  geom_point(aes(FCH4,median.rf.ch4))+
+  geom_abline(slope = 1,intercept = 0,col='red',lty=2)+
+  scale_x_continuous(limits = c(-70,150),expression("Eddy Covariance"~CH[4]~Flux~"("*nmol~CH[4]~m^-2~s^-1*")"))+
+  scale_y_continuous(limits = c(-70,150),expression("Random Forest"~CH[4]~Flux~"("*nmol~CH[4]~m^-2~s^-1*")"))
+
+
 #annual statistics
 df$year  = format(x = df$date,'%Y')
 df$month = format(x = df$date,'%m')
@@ -295,8 +333,9 @@ plot(df$rmse.nee)
 plot(df$sd.rf.ch4)
 plot(df$sd.rf.nee)
 
+
 #
-write.csv(x = df,file = './error_churchill.csv',row.names = F)
+write.csv(x = df,file = './data/error_churchill_validation.csv',row.names = F)
 
 
 #sums of annual sums
