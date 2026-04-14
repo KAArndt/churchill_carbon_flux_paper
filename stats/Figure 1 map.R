@@ -23,7 +23,7 @@ register_google(key = '')
 coords = c(-93.830758,58.665705)
 
 #get a zoomed in site photo
-ch.site = get_map(location = c(coords),maptype = 'satellite',zoom = 10)
+ch.site = get_map(location = c(coords),maptype = 'satellite',zoom = 13)
 
 #get a regional image
 can = get_map(location = c(coords),maptype = 'satellite',zoom = 4)
@@ -45,13 +45,17 @@ a = ggmap(ggmap = can)+
   theme(text = element_text(size = 6))
 
 #site plot
-b=ggmap(ggmap = ch.site)+
+b=ggmap(ggmap = ch.site,darken = c(0.1, "white"))+
   geom_point(aes(coords[1],coords[2]),col='white',pch=24,fill='black',size=1)+
   theme(text = element_text(size = 6))
  # annotate(geom = 'text',label = 'CA-CF3',x = coords[1]+.0008,y = coords[2]+.0002,col='white')
 
 ab = plot_grid(a,b,labels = c('a','b'),nrow = 2,label_size = 6)
 
-jpeg(filename = './figures/figure1.jpg',width = 3,height = 2.5,units = 'in',res = 1500)
-plot_grid(ab,g,labels = c('','c'),label_size = 6,nrow = 1,rel_widths = c(0.5,0.5))
+final = plot_grid(ab,g,labels = c('','c'),label_size = 6,nrow = 1,rel_widths = c(0.45,0.55))
+
+final
+
+jpeg(filename = './figures/figure1.jpg',width = 4.5,height = 3.5,units = 'in',res = 1500)
+final
 dev.off()
