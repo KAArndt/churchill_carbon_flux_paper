@@ -19,7 +19,7 @@ df2 = data.frame(df$date,
                  df$AIRT_ERA5,
                  df$DEW_ERA5,
                  df$ST2_ERA5,
-                 df$VWC1_ERA5,
+                 df$SWC_1_1_1,
                  df$RAD_ERA5,
                  df$H_ERA5,
                  df$LE_ERA5,
@@ -27,6 +27,9 @@ df2 = data.frame(df$date,
 
 #rename for easier names
 names(df2) = c('date','nee',"fch4",'tair','dew','tsoil','vwc','rg','h','le','pres')
+
+#gapfill vwc using linear interpolation
+df2$vwc = na.approx(object = df2$vwc)
 
 #calculate VPD from air t and RH
 df2$rh = 100*(exp((17.625*df2$dew)/(243.04+df2$dew))/exp((17.625*df$AIRT_ERA5)/(243.04+df$AIRT_ERA5)))
@@ -57,7 +60,7 @@ cl = makeCluster(10)     #assign number of cores
                               .combine = cbind, #how to combine the data, this will essentially make a data frame
                               .packages = c('randomForest')) %dopar% {
     #train each random forest on each matrix training data set
-  rfnee = randomForest(formula = nee ~ tair + rh + rg + tsoil + vpd + le + pres + h,
+  rfnee = randomForest(formula = nee ~ tair + rh + rg + tsoil + vpd + le + pres + h + vwc,
                        data = train, ntree = 75)
     #predict from each of these random forests over the whole data set
   predict(object = rfnee,newdata = df2)
