@@ -48,7 +48,7 @@ library(RColorBrewer)
 ```{r, warning=FALSE, echo=FALSE}
 
 # Using Kyle's error dataset here!!
-df3 <- fread('./data/error_churchill.csv', na.strings=c("-9999", "NA"))
+df3 <- fread('./data/error_churchill_validation.csv', na.strings=c("-9999", "NA"))
 
 ```
 
@@ -253,6 +253,44 @@ df$SWC_1_1_1 <- ifelse(df$TS_3_1_1 < 0, NA, df$SWC_1_1_1)
 df$SWC_2_1_1 <- ifelse(df$TS_4_1_1 < 0, NA, df$SWC_2_1_1)
 df$SWC_2_2_1 <- ifelse(df$TS_4_1_1 < 0, NA, df$SWC_2_2_1)
 
+
+```
+
+# Compare "FC" variables and median flux values from error calculations
+Trends line up well, but using the median pulls down outliars by quite a bit
+
+```{r}
+
+## NEE
+# 1:1
+ggplot(data = df)+
+  geom_point(aes(FC_F, median.rf.nee))+
+  geom_abline(aes(intercept= 0, slope = 1))
+
+# Timeseries
+ggplot(data = df)+
+  geom_point(aes(TIMESTAMP, FC_F), color = "turquoise3")+
+  geom_point(aes(TIMESTAMP, median.rf.nee), color = "coral")
+
+## CH4
+# 1:1
+ggplot(data = df)+
+  geom_point(aes(FCH4_F, median.rf.ch4))+
+  geom_abline(aes(intercept= 0, slope = 1))
+
+# Timeseries
+ggplot(data = df)+
+  geom_point(aes(TIMESTAMP, FCH4_F), color = "turquoise3")+
+  geom_point(aes(TIMESTAMP, median.rf.ch4), color = "coral")
+
+
+##### Reassign FC_F and FCH4_F to median values
+
+df$FC_F_old <- df$FC_F
+df$FC_F <- df$median.rf.nee
+
+df$FCH4_F_old <- df$FCH4_F
+df$FCH4_F <- df$median.rf.ch4
 
 ```
 
