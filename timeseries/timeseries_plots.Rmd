@@ -800,7 +800,7 @@ png(filename = './png/temp_ts.png',width = 10,height = 3,units = 'in',res = 2000
 temp_ts
 dev.off()
 
-png(filename = './png/gpp_reco_ts.png',width = 10,height = 6,units = 'in',res = 2000)
+png(filename = './png/gpp_reco_ts.png',width = 9.5,height = 5.5,units = 'in',res = 2000)
 gpp_ts / reco_ts + plot_layout(guides = "collect", axes = "collect")
 dev.off()
 
